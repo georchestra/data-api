@@ -1,0 +1,3 @@
+com.camptocamp.opendata.indexing.producer.ProducersAutoConfiguration
+com.camptocamp.opendata.indexing.processor.ProcessorsAutoConfiguration
+com.camptocamp.opendata.indexing.sink.ConsumersAutoConfiguration

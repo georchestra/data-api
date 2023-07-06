@@ -1,0 +1,51 @@
+info:
+  instance-id: ${spring.application.name}:${spring.application.instance_id:${spring.cloud.client.ip-address}}:${server.port}
+
+server:
+  port: 8080
+spring:
+  application.name: indexing-service
+  main.banner-mode: off
+  webflux.base-path: /
+  codec:
+    max-in-memory-size: 1GB
+  jackson:
+    default-property-inclusion: non-empty
+    serialization:
+      indent-output: true
+
+
+management:
+  endpoint:
+    info:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+  endpoints:
+    web.exposure.include: info, health, metrics, prometheus
+
+dataviz:
+  indexer:
+    producers:
+      # these are all default values (i.e. same as not setting them at all),
+      # for the sake of documenation (IDE autocompletion enabled)
+      shp:
+        default-charset: UTF-8
+      wfs: 
+        lenient: true
+        #prefer-post:
+        #timeout: 30000
+        try-gzip: true
+        http-connection-pooling: true
+        http-connection-pool-size: 6
+        
+    
+logging:
+  level:
+    root: info
+    org.fao.geonet.dataviz: info
+    org.fao.geonet.dataviz.producer.geotools: debug
+    

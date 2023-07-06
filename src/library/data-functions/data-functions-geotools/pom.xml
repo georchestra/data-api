@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.camptocamp.opendata</groupId>
+    <artifactId>opendata-functions</artifactId>
+    <version>${revision}</version>
+  </parent>
+  <artifactId>opendata-functions-geotools</artifactId>
+  <name>GeoTools based data processing functions</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.camptocamp.opendata</groupId>
+      <artifactId>opendata-functions-core</artifactId>
+    </dependency>
+    <dependency>
+      <!-- TODO: REMOVE, used by WfsFormat to parse the query params, use something else instead of adding this dependency just for that? -->
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+    </dependency>
+    <!-- Depdendencies for GeoTools URI based data streamer -->
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-epsg-hsql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-shapefile</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-geopkg</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-wfs-ng</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-geojson-store</artifactId>
+    </dependency>
+  </dependencies>
+</project>

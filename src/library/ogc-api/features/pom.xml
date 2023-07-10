@@ -3,13 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.camptocamp.opendata</groupId>
-    <artifactId>opendata-parent</artifactId>
+    <artifactId>ogc-api</artifactId>
     <version>${revision}</version>
   </parent>
-  <artifactId>opendata-lib</artifactId>
+  <artifactId>ogc-api-features</artifactId>
   <packaging>pom</packaging>
   <modules>
-    <module>data-functions</module>
-    <module>ogc-api</module>
+    <module>api</module>
   </modules>
 </project>

@@ -61,6 +61,11 @@
         <artifactId>opendata-functions-jackson</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.camptocamp.opendata</groupId>
+        <artifactId>opendata-ogc-features-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -68,6 +73,15 @@
     <repository>
       <id>OSGeo</id>
       <url>https://repo.osgeo.org/repository/release/</url>
+    </repository>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Central Repository</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <layout>default</layout>
     </repository>
   </repositories>
 

@@ -7,11 +7,20 @@
     <version>${revision}</version>
   </parent>
   <artifactId>opendata-ogc-features-api</artifactId>
-  <properties>
-    <springdoc.version>1.6.14</springdoc.version>
-    <swagger-ui.version>4.15.5</swagger-ui.version>
-  </properties>
   <dependencies>
+    <dependency>
+      <groupId>org.geotools.jdbc</groupId>
+      <artifactId>gt-jdbc-postgis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-epsg-hsql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.camptocamp.opendata</groupId>
+      <artifactId>opendata-functions-core</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webflux</artifactId>
@@ -20,17 +29,9 @@
       <groupId>org.springframework.data</groupId>
       <artifactId>spring-data-commons</artifactId>
     </dependency>
-    <!--SpringDoc dependencies -->
     <dependency>
       <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-webflux-ui</artifactId>
-      <version>${springdoc.version}</version>
-    </dependency>
-    <!-- @Nullable annotation -->
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
-      <version>3.0.2</version>
+      <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -39,11 +40,6 @@
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.openapitools</groupId>
-      <artifactId>jackson-databind-nullable</artifactId>
-      <version>0.2.6</version>
     </dependency>
     <!-- Bean Validation API support -->
     <dependency>
@@ -81,12 +77,17 @@
                 <reactive>true</reactive>
                 <useSpringBoot3>true</useSpringBoot3>
                 <delegatePattern>true</delegatePattern>
+                <openApiNullable>false</openApiNullable>
                 <basePackage>com.camptocamp.ogc.features.server</basePackage>
                 <apiPackage>com.camptocamp.ogc.features.server.api</apiPackage>
                 <modelPackage>com.camptocamp.ogc.features.server.model</modelPackage>
                 <configPackage>com.camptocamp.ogc.features.server.config</configPackage>
                 <invokerPackage>com.camptocamp.ogc.features.server.invoker</invokerPackage>
               </configOptions>
+              <typeMappings>
+                <typeMapping>FeatureCollectionGeoJSON=com.camptocamp.ogc.features.server.model.FeatureCollection</typeMapping>
+                <!--typeMapping>FeatureGeoJSON=com.camptocamp.opendata.model.GeodataRecord</typeMapping-->
+              </typeMappings>
             </configuration>
           </execution>
         </executions>

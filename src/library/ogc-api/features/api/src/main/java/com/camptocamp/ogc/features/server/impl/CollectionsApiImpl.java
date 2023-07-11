@@ -1,6 +1,7 @@
 package com.camptocamp.ogc.features.server.impl;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,8 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
             List<BigDecimal> bbox, //
             String datetime, //
             ServerWebExchange exchange) {
-        throw new UnsupportedOperationException();
+    	
+    	//query collection id from whatever datasource is defined as index
+    	return DataQuery.fromUri(URI.create("index://" + collectionId));
     }
 }

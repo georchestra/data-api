@@ -1,2 +1,3 @@
 com.camptocamp.opendata.ogc.features.autoconfigure.BackendAutoConfiguration
+com.camptocamp.opendata.ogc.features.autoconfigure.SampleDataBackendAutoConfiguration
 com.camptocamp.opendata.ogc.features.autoconfigure.ApiAutoConfiguration

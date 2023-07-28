@@ -16,7 +16,7 @@ public interface GeodataRecord {
 
     GeometryProperty getGeometry();
 
-    List<SimpleProperty<?>> getProperties();
+    List<? extends SimpleProperty<?>> getProperties();
 
     <V> Optional<? extends SimpleProperty<?>> getProperty(@NonNull String name);
 
@@ -50,7 +50,7 @@ public interface GeodataRecord {
             return this;
         }
 
-        public Builder properties(List<SimpleProperty<?>> properties) {
+        public Builder properties(List<? extends SimpleProperty<?>> properties) {
             impl.properties(properties);
             return this;
         }

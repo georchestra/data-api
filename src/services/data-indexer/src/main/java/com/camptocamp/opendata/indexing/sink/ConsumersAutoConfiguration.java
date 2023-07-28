@@ -6,7 +6,8 @@ import org.springframework.context.annotation.Bean;
 @AutoConfiguration
 public class ConsumersAutoConfiguration {
 
-    public @Bean Consumers consumers() {
+    @Bean
+    Consumers consumers() {
         return new Consumers();
     }
 }

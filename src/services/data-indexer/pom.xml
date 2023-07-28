@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.camptocamp.opendata</groupId>
-    <artifactId>opendata-services</artifactId>
+    <artifactId>services</artifactId>
     <version>${revision}</version>
   </parent>
   <artifactId>opendata-indexer</artifactId>

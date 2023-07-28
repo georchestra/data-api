@@ -1,4 +1,4 @@
-package com.camptocamp.ogc.features.server.model;
+package com.camptocamp.opendata.ogc.features.model;
 
 import java.time.OffsetDateTime;
 import java.util.List;

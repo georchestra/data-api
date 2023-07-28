@@ -44,7 +44,7 @@ public class Producers {
         return readers.stream().filter(r -> r.canHandle(uri)).findFirst();
     }
 
-	private Supplier<? extends IllegalArgumentException> noReaderException(URI uri) {
+    private Supplier<? extends IllegalArgumentException> noReaderException(URI uri) {
         return () -> new IllegalArgumentException(
                 String.format("No DataReader can handle the provided URI %s. Available readers: '%s'", uri,
                         readers.stream().map(DatasetReader::getName).collect(Collectors.joining(","))));

@@ -82,7 +82,8 @@ public class GeoRecordToGeoJsonFeatureModule extends SimpleModule {
             writeProperties(generator, record.getProperties());
         }
 
-        private void writeProperties(JsonGenerator generator, List<SimpleProperty<?>> properties) throws IOException {
+        private void writeProperties(JsonGenerator generator, List<? extends SimpleProperty<?>> properties)
+                throws IOException {
             generator.writeFieldName("properties");
             generator.writeStartObject();
             for (SimpleProperty<?> p : properties) {

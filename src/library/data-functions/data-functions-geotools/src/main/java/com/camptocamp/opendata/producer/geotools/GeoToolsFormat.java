@@ -39,7 +39,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 
 @Slf4j
-public abstract class GeoToolsFormat {
+abstract class GeoToolsFormat {
 
     public abstract String getName();
 

@@ -1,3 +1,2 @@
-com.camptocamp.opendata.ogc.features.autoconfigure.ProducersAutoConfiguration
 com.camptocamp.opendata.ogc.features.autoconfigure.BackendAutoConfiguration
 com.camptocamp.opendata.ogc.features.autoconfigure.ApiAutoConfiguration

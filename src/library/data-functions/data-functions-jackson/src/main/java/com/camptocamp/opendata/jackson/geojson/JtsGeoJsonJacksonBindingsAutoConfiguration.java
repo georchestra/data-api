@@ -23,11 +23,13 @@ import com.fasterxml.jackson.databind.Module;
 @AutoConfiguration
 public class JtsGeoJsonJacksonBindingsAutoConfiguration {
 
-    public @Bean JtsGeoJsonModule jtsGeoJsonModule() {
+    @Bean
+    JtsGeoJsonModule jtsGeoJsonModule() {
         return new JtsGeoJsonModule();
     }
 
-    public @Bean GeoRecordToGeoJsonFeatureModule geoRecordToGeoJsonFeatureModule() {
+    @Bean
+    GeoRecordToGeoJsonFeatureModule geoRecordToGeoJsonFeatureModule() {
         return new GeoRecordToGeoJsonFeatureModule();
     }
 }

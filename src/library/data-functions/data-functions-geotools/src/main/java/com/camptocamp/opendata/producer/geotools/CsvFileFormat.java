@@ -10,24 +10,24 @@ import com.camptocamp.opendata.model.DataQuery;
 
 import lombok.NonNull;
 
-public class CsvFileFormat extends GeoToolsFormat{
+class CsvFileFormat extends GeoToolsFormat {
 
-	private static final CSVDataStoreFactory FACTORY = new CSVDataStoreFactory();
+    private static final CSVDataStoreFactory FACTORY = new CSVDataStoreFactory();
 
-	@Override
-	public String getName() {
-		return FACTORY.getDisplayName();
-	}
+    @Override
+    public String getName() {
+        return FACTORY.getDisplayName();
+    }
 
-	@Override
-	public boolean canHandle(@NonNull URI datasetUri) {
+    @Override
+    public boolean canHandle(@NonNull URI datasetUri) {
         return FACTORY.canProcess(super.toURL(datasetUri));
-	}
+    }
 
-	@Override
-	protected Map<String, ?> toConnectionParams(@NonNull DataQuery query) {
-		URL url = super.toURL(query.getSource().getUri());
-		return Map.of(CSVDataStoreFactory.URL_PARAM.key, url);
-	}
+    @Override
+    protected Map<String, ?> toConnectionParams(@NonNull DataQuery query) {
+        URL url = super.toURL(query.getSource().getUri());
+        return Map.of(CSVDataStoreFactory.URL_PARAM.key, url);
+    }
 
 }

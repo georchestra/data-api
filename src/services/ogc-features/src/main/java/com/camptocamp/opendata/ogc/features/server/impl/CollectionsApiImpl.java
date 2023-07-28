@@ -1,4 +1,4 @@
-package com.camptocamp.ogc.features.server.impl;
+package com.camptocamp.opendata.ogc.features.server.impl;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -7,10 +7,10 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.camptocamp.ogc.features.repository.CollectionRepository;
-import com.camptocamp.ogc.features.server.api.CollectionsApiDelegate;
-import com.camptocamp.ogc.features.server.model.FeatureCollection;
 import com.camptocamp.opendata.model.DataQuery;
+import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
+import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
+import com.camptocamp.opendata.ogc.features.server.api.CollectionsApiDelegate;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +39,8 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
             List<BigDecimal> bbox, //
             String datetime, //
             ServerWebExchange exchange) {
-    	
-    	//query collection id from whatever datasource is defined as index
-    	return DataQuery.fromUri(URI.create("index://" + collectionId));
+
+        // query collection id from whatever datasource is defined as index
+        return DataQuery.fromUri(URI.create("index://" + collectionId));
     }
 }

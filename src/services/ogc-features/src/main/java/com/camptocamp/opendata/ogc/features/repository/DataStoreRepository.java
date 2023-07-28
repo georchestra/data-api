@@ -1,12 +1,12 @@
-package com.camptocamp.ogc.features.repository;
+package com.camptocamp.opendata.ogc.features.repository;
 
 import java.time.OffsetDateTime;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.camptocamp.ogc.features.server.model.FeatureCollection;
 import com.camptocamp.opendata.model.DataQuery;
 import com.camptocamp.opendata.model.GeodataRecord;
+import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.camptocamp.opendata.producer.Producers;
 
 import lombok.NonNull;

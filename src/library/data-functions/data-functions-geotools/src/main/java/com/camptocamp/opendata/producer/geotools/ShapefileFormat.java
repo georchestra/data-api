@@ -21,7 +21,7 @@ import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import com.camptocamp.opendata.model.DataQuery;
 import com.camptocamp.opendata.model.DataSource;
 
-public class ShapefileFormat extends GeoToolsFormat {
+class ShapefileFormat extends GeoToolsFormat {
 
     private static final ShapefileDataStoreFactory FACTORY = new ShapefileDataStoreFactory();
 

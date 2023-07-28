@@ -8,7 +8,7 @@ import lombok.Data;
  * Global Shapefile protocol preferences
  */
 @Data
-public class ShapefileFormatProperties {
+class ShapefileFormatProperties {
 
     /**
      * Optional - character set used to decode strings from the DBF file, if not

@@ -6,10 +6,9 @@
     <artifactId>opendata-parent</artifactId>
     <version>${revision}</version>
   </parent>
-  <artifactId>opendata-lib</artifactId>
+  <artifactId>lib</artifactId>
   <packaging>pom</packaging>
   <modules>
     <module>data-functions</module>
-    <module>ogc-api</module>
   </modules>
 </project>

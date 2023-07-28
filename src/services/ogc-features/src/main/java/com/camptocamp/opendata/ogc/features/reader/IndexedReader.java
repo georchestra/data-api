@@ -12,26 +12,26 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public abstract class IndexedReader implements DatasetReader{
+public abstract class IndexedReader implements DatasetReader {
 
-	private final @NonNull GeoToolsDataReader gtReader;
-	
-	@Override
-	public String getName() {
-		return "IndexedReader";
-	}
+    private final @NonNull GeoToolsDataReader gtReader;
 
-	@Override
-	public boolean canHandle(URI datasetUri) {
-		return "index".equals(datasetUri.getScheme());
-	}
+    @Override
+    public String getName() {
+        return "IndexedReader";
+    }
 
-	@Override
-	public Stream<GeodataRecord> read(@NonNull DataQuery query) {
-		DataQuery gtQuery = toGtQuery(query);
-		return gtReader.read(gtQuery);
-	}
+    @Override
+    public boolean canHandle(URI datasetUri) {
+        return "index".equals(datasetUri.getScheme());
+    }
 
-	protected abstract DataQuery toGtQuery(@NonNull DataQuery query);
+    @Override
+    public Stream<GeodataRecord> read(@NonNull DataQuery query) {
+        DataQuery gtQuery = toGtQuery(query);
+        return gtReader.read(gtQuery);
+    }
+
+    protected abstract DataQuery toGtQuery(@NonNull DataQuery query);
 
 }

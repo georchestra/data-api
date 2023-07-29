@@ -5,15 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.camptocamp.opendata.model.DataQuery;
+import com.camptocamp.opendata.model.GeodataRecord;
+import com.camptocamp.opendata.producer.DatasetReader;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import com.camptocamp.opendata.model.DataQuery;
-import com.camptocamp.opendata.model.GeodataRecord;
-import com.camptocamp.opendata.producer.DatasetReader;
 
 @Slf4j
 @ToString
@@ -28,9 +29,20 @@ public class GeoToolsDataReader implements DatasetReader {
 
     @Override
     public Stream<GeodataRecord> read(@NonNull DataQuery query) {
+        final GeoToolsFormat formatReader = findReader(query);
+        return formatReader.read(query);
+    }
+
+    @Override
+    public Long count(@NonNull DataQuery query) {
+        final GeoToolsFormat formatReader = findReader(query);
+        return formatReader.count(query);
+    }
+
+    private GeoToolsFormat findReader(DataQuery query) {
         final URI datasetUri = query.getSource().getUri();
         final GeoToolsFormat formatReader = findReader(datasetUri);
-        return formatReader.read(query);
+        return formatReader;
     }
 
     private GeoToolsFormat findReader(final URI datasetUri) {

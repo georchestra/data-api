@@ -16,4 +16,6 @@ public interface DatasetReader {
 
     Stream<GeodataRecord> read(@NonNull DataQuery query);
 
+    Long count(@NonNull DataQuery query);
+
 }

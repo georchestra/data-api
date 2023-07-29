@@ -20,7 +20,7 @@ public class GeodataRecordImpl implements GeodataRecord {
 
     private GeometryProperty geometry;
 
-    private @NonNull List<SimpleProperty<?>> properties;
+    private @NonNull List<? extends SimpleProperty<?>> properties;
 
     @Override
     public <V> Optional<? extends SimpleProperty<?>> getProperty(@NonNull String name) {

@@ -1,27 +1,29 @@
 package com.camptocamp.opendata.producer.geotools;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import lombok.extern.slf4j.Slf4j;
+import java.util.function.Predicate;
 
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.GeometryAttribute;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.model.GeometryProperty;
 import com.camptocamp.opendata.model.SimpleProperty;
+import com.google.common.base.Predicates;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FeatureToRecord implements Function<SimpleFeature, GeodataRecord> {
+class FeatureToRecord implements Function<SimpleFeature, GeodataRecord> {
 
     private Map<CoordinateReferenceSystem, String> crsToSrs = new IdentityHashMap<>();
 
@@ -32,8 +34,8 @@ public class FeatureToRecord implements Function<SimpleFeature, GeodataRecord> {
         String typeName = f.getFeatureType().getTypeName();
         builder.typeName(typeName);
         builder.id(stripTypeNameFromFeatureId(typeName, f.getID()));
-        builder.geometry(getGeometryProperty(f));
-        builder.properties(getSimpleProperties(f));
+        builder.geometry(defaultGeometry(f));
+        builder.properties(simpleProperties(f));
         return builder.build();
     }
 
@@ -50,30 +52,42 @@ public class FeatureToRecord implements Function<SimpleFeature, GeodataRecord> {
         return fid;
     }
 
-    private List<SimpleProperty<?>> getSimpleProperties(SimpleFeature f) {
-        Collection<Property> atts = f.getProperties();
-        List<SimpleProperty<?>> props = new ArrayList<>(atts.size());
+    private List<? extends SimpleProperty<?>> simpleProperties(SimpleFeature f) {
 
-        for (Property att : atts) {
-            if (!(att instanceof GeometryAttribute)) {
-                SimpleProperty<?> p = SimpleProperty.builder()//
-                        .name(att.getName().getLocalPart())//
-                        .value(att.getValue())//
-                        .build();
-                props.add(p);
-            }
+        Predicate<? super Property> notDefaultGeom = Predicates.alwaysTrue();
+        if (null != f.getFeatureType().getGeometryDescriptor()) {
+            GeometryDescriptor d = f.getFeatureType().getGeometryDescriptor();
+            notDefaultGeom = p -> !p.getName().equals(d.getName());
         }
-        return props;
+
+        return f.getProperties().stream().filter(notDefaultGeom).map(this::toProperty).toList();
     }
 
-    private GeometryProperty getGeometryProperty(SimpleFeature f) {
+    private SimpleProperty<? extends Object> toProperty(org.opengis.feature.Property property) {
+        return property instanceof GeometryAttribute ? geometryProperty((GeometryAttribute) property)
+                : simpleProperty(property);
+    }
+
+    private SimpleProperty<?> simpleProperty(Property att) {
+        SimpleProperty<?> p = SimpleProperty.builder()//
+                .name(att.getName().getLocalPart())//
+                .value(att.getValue())//
+                .build();
+        return p;
+    }
+
+    private GeometryProperty defaultGeometry(SimpleFeature f) {
         GeometryAttribute defaultGeometry = f.getDefaultGeometryProperty();
-        if (null == defaultGeometry) {
+        return geometryProperty(defaultGeometry);
+    }
+
+    private GeometryProperty geometryProperty(GeometryAttribute geometry) {
+        if (null == geometry) {
             return null;
         }
-        String name = defaultGeometry.getName().getLocalPart();
-        Geometry value = (Geometry) defaultGeometry.getValue();
-        CoordinateReferenceSystem crs = defaultGeometry.getType().getCoordinateReferenceSystem();
+        String name = geometry.getName().getLocalPart();
+        Geometry value = (Geometry) geometry.getValue();
+        CoordinateReferenceSystem crs = geometry.getType().getCoordinateReferenceSystem();
         String srs = crsToSrs.computeIfAbsent(crs, this::toSrs);
         return GeometryProperty.builder().name(name).value(value).srs(srs).build();
     }
@@ -87,5 +101,4 @@ public class FeatureToRecord implements Function<SimpleFeature, GeodataRecord> {
             return null;
         }
     }
-
 }

@@ -8,7 +8,7 @@ import lombok.Data;
  * Global GeoPackage protocol preferences
  */
 @Data
-public class GeoPackageFormatProperties {
+class GeoPackageFormatProperties {
 
     /**
      * File extensions (without dot, e.g. 'gpkg') used to assume the resource

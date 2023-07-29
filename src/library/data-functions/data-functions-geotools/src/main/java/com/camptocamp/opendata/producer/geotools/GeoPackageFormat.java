@@ -15,7 +15,7 @@ import org.geotools.geopkg.GeoPkgDataStoreFactory;
 
 import com.camptocamp.opendata.model.DataQuery;
 
-public class GeoPackageFormat extends GeoToolsFormat {
+class GeoPackageFormat extends GeoToolsFormat {
 
     private @Getter @Setter GeoPackageFormatProperties defaults = new GeoPackageFormatProperties();
 

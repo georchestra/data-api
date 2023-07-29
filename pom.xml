@@ -15,8 +15,8 @@
 
   <properties>
     <revision>1.0-SNAPSHOT</revision>
-    <spring-cloud.version>2022.0.3</spring-cloud.version>
-    <spring-boot.version>3.0.7</spring-boot.version>
+    <spring-cloud.version>2022.0.4</spring-cloud.version>
+    <spring-boot.version>3.0.9</spring-boot.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>17</java.version>
@@ -61,6 +61,11 @@
         <artifactId>opendata-functions-jackson</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.camptocamp.opendata</groupId>
+        <artifactId>opendata-ogc-features-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -69,9 +74,19 @@
       <id>OSGeo</id>
       <url>https://repo.osgeo.org/repository/release/</url>
     </repository>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Central Repository</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <layout>default</layout>
+    </repository>
   </repositories>
 
   <build>
+    <defaultGoal>clean install</defaultGoal>
     <pluginManagement>
       <plugins>
         <plugin>

@@ -502,13 +502,14 @@ public class JtsGeoJsonModule extends SimpleModule {
             return typeNode instanceof TextNode && isGeometry(((TextNode) typeNode).asText());
         }
 
-        private static final Set<String> geomTypes = new HashSet<>(Arrays.asList( //
-                "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon",
-                "GeometryCollection"));
-
         public static boolean isGeometry(String type) {
             return geomTypes.contains(type);
         }
+
+        private static final Set<String> geomTypes = Set.of( //
+                "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon",
+                "GeometryCollection");
+
     }
 
 }

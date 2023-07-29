@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -16,12 +15,13 @@ import org.springframework.context.annotation.Bean;
 import com.camptocamp.opendata.indexing.processor.Processors;
 import com.camptocamp.opendata.indexing.sink.Consumers;
 import com.camptocamp.opendata.model.AuthCredentials;
+import com.camptocamp.opendata.model.AuthCredentials.AuthType;
 import com.camptocamp.opendata.model.DataQuery;
 import com.camptocamp.opendata.model.DataSource;
 import com.camptocamp.opendata.model.GeodataRecord;
-import com.camptocamp.opendata.model.AuthCredentials.AuthType;
 import com.camptocamp.opendata.producer.Producers;
 
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
@@ -46,24 +46,25 @@ public class IndexingApp {
     }
 
     @Bean
-    public Supplier<DataQuery> sampleQuery() {
+    Supplier<DataQuery> sampleQuery() {
 
-        DataSource source = new DataSource().setUri(URI.create("http://ows.example.com/wfs?request=GetCapabilities"))
-                .setEncoding(StandardCharsets.UTF_8)
-                .setAuth(new AuthCredentials().setUserName("user").setPassword("secret").setType(AuthType.basic));
+        AuthCredentials auth = AuthCredentials.builder().userName("user").password("secret").type(AuthType.basic)
+                .build();
+        DataSource source = DataSource.builder().uri(URI.create("http://ows.example.com/wfs?request=GetCapabilities"))
+                .encoding(StandardCharsets.UTF_8).auth(auth).build();
 
-        return () -> new DataQuery().setSource(source).setLayerName("topp:states");
+        return () -> DataQuery.builder().source(source).layerName("topp:states").build();
     }
 
     @Bean
-    public Function<Flux<URI>, Flux<GeodataRecord>> indexAll() {
+    Function<Flux<URI>, Flux<GeodataRecord>> indexAll() {
         // Consumer<GeodataRecord> c;
         Function<Flux<URI>, Flux<GeodataRecord>> source = readAll().andThen(toWgs84());
         return source;
     }
 
     @Bean
-    public Consumer<Flux<GeodataRecord>> index() {
+    Consumer<Flux<GeodataRecord>> index() {
         return records -> {
             log.info("index()");
             consumers.index(records.publishOn(Schedulers.parallel()));
@@ -81,12 +82,12 @@ public class IndexingApp {
      *         {@link GeodataRecord}
      */
     @Bean
-    public Function<Flux<URI>, Flux<GeodataRecord>> readAll() {
+    Function<Flux<URI>, Flux<GeodataRecord>> readAll() {
         return uris -> uris.flatMap(uri -> toFlux(producers.read(DataQuery.fromUri(uri))));
     }
 
     @Bean
-    public Function<Flux<DataQuery>, Flux<GeodataRecord>> read() {
+    Function<Flux<DataQuery>, Flux<GeodataRecord>> read() {
         return queries -> queries.flatMap(query -> {
             log.info("read() {}", query);
             return toFlux(producers.read(query));
@@ -94,7 +95,7 @@ public class IndexingApp {
     }
 
     @Bean
-    public Function<Flux<GeodataRecord>, Flux<GeodataRecord>> toWgs84() {
+    Function<Flux<GeodataRecord>, Flux<GeodataRecord>> toWgs84() {
         return flux -> toFlux(() -> {
             log.info("toWgs84()");
             Stream<GeodataRecord> in = flux.toStream();

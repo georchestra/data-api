@@ -24,7 +24,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import com.camptocamp.opendata.model.DataQuery;
 import com.camptocamp.opendata.model.DataSource;
 
-public class WfsFormat extends GeoToolsFormat {
+class WfsFormat extends GeoToolsFormat {
 
     private @Getter @Setter WfsFormatProperties defaults = new WfsFormatProperties();
 

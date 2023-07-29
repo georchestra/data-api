@@ -15,7 +15,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class GeoJsonFormat extends GeoToolsFormat {
+class GeoJsonFormat extends GeoToolsFormat {
 
     private static final GeoJSONDataStoreFactory FACTORY = new GeoJSONDataStoreFactory();
 

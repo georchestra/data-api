@@ -6,7 +6,7 @@ import lombok.Data;
  * Global WFS protocol preferences
  */
 @Data
-public class WfsFormatProperties {
+class WfsFormatProperties {
 
     /**
      * Indicates that datastore should do its best to create features from the

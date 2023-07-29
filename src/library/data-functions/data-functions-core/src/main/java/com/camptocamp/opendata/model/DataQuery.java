@@ -1,17 +1,26 @@
 package com.camptocamp.opendata.model;
 
 import java.net.URI;
-import lombok.Data;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.With;
 import lombok.experimental.Accessors;
 
-@Data
+@Value
+@With
+@Builder
 @Accessors(chain = true)
 public class DataQuery {
 
-    private DataSource source;
+    private @NonNull DataSource source;
     private String layerName;
+    private Integer offset;
+    private Integer limit;
 
     public static DataQuery fromUri(URI dataUri) {
-        return new DataQuery().setSource(DataSource.fromUri(dataUri));
+        DataSource dataSource = DataSource.fromUri(dataUri);
+        return DataQuery.builder().source(dataSource).build();
     }
 }

@@ -1,0 +1,12 @@
+
+
+springdoc:
+  # see https://springdoc.org/#how-can-i-disable-springdoc-openapi-cache
+  cache.disabled: true
+  api-docs:
+    enabled: true
+    #path: ${openapi.geoServerACL.base-path}/api-docs
+  swagger-ui:
+    enabled: true
+    #path: ${openapi.geoServerACL.base-path}/swagger-ui.html
+    try-it-out-enabled: true    

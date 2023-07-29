@@ -9,15 +9,18 @@ import com.camptocamp.opendata.processor.geotools.GeoToolsProcessors;
 @AutoConfiguration
 public class ProcessorsAutoConfiguration {
 
-    public @Bean Processors processors() {
+    @Bean
+    Processors processors() {
         return new Processors();
     }
 
-    public @Bean StandardProcessors standardProcessors() {
+    @Bean
+    StandardProcessors standardProcessors() {
         return new StandardProcessors();
     }
 
-    public @Bean GeoToolsProcessors geoToolsProcessors() {
+    @Bean
+    GeoToolsProcessors geoToolsProcessors() {
         return new GeoToolsProcessors();
     }
 }

@@ -3,10 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.camptocamp.opendata</groupId>
-    <artifactId>opendata-lib</artifactId>
+    <artifactId>lib</artifactId>
     <version>${revision}</version>
   </parent>
-  <artifactId>opendata-functions</artifactId>
+  <artifactId>functions</artifactId>
   <packaging>pom</packaging>
   <name>Functional API for Data processing</name>
   <modules>

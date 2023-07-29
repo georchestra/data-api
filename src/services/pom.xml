@@ -8,9 +8,10 @@
     <artifactId>opendata-parent</artifactId>
     <version>${revision}</version>
   </parent>
-  <artifactId>opendata-services</artifactId>
+  <artifactId>services</artifactId>
   <packaging>pom</packaging>
   <modules>
     <module>data-indexer</module>
+    <module>ogc-features</module>
   </modules>
 </project>

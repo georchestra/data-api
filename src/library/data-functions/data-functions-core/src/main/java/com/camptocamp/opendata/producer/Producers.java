@@ -33,11 +33,20 @@ public class Producers {
      *                                  handle the query
      */
     public Supplier<Stream<? extends GeodataRecord>> read(@NonNull DataQuery query) {
+        DatasetReader reader = reader(query);
+        return () -> reader.read(query);
+    }
+
+    public Supplier<Long> count(@NonNull DataQuery query) {
+        return () -> reader(query).count(query);
+    }
+
+    private DatasetReader reader(DataQuery query) {
         final URI uri = query.getSource().getUri();
         Objects.requireNonNull(uri);
 
         DatasetReader reader = reader(uri).orElseThrow(noReaderException(uri));
-        return () -> reader.read(query);
+        return reader;
     }
 
     public Optional<DatasetReader> reader(@NonNull URI uri) {
@@ -49,4 +58,5 @@ public class Producers {
                 String.format("No DataReader can handle the provided URI %s. Available readers: '%s'", uri,
                         readers.stream().map(DatasetReader::getName).collect(Collectors.joining(","))));
     }
+
 }

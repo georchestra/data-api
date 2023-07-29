@@ -11,8 +11,6 @@ import com.camptocamp.opendata.producer.Producers;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
 
 @RequiredArgsConstructor
 public class DataStoreRepository implements CollectionRepository {
@@ -22,22 +20,14 @@ public class DataStoreRepository implements CollectionRepository {
     @Override
     public FeatureCollection query(@NonNull DataQuery query) {
         Supplier<Stream<? extends GeodataRecord>> dataSupplier = producers.read(query);
+        Long matched = producers.count(query.withLimit(null)).get();
+        Long returned = producers.count(query).get();
+
         FeatureCollection fc = new FeatureCollection();
-        fc.setFeatures(() -> toFlux(dataSupplier));
+        fc.setNumberMatched(matched);
+        fc.setNumberReturned(returned);
+        fc.setFeatures(dataSupplier.get().toList());
         fc.setTimeStamp(OffsetDateTime.now());
         return fc;
-    }
-
-    /**
-     * Adapts a {@link Stream} to a {@link Flux}, note that
-     * {@link Flux#fromStream(Stream)} already makes sure {@link Stream#close()} is
-     * called when the stream is fully consumed.
-     */
-    private <T> Flux<T> toFlux(Supplier<Stream<? extends T>> stream) {
-        return Flux.fromStream(stream)//
-                // subscribe on Schedulers.boundedElastic() to avoid
-                // "java.lang.IllegalStateException: Iterating over a toIterable() / toStream()
-                // is blocking, which is not supported in thread reactor-http-epoll-XXX"
-                .subscribeOn(Schedulers.boundedElastic());
     }
 }

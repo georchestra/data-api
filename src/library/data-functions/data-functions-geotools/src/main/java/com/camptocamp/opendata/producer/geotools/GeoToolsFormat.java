@@ -4,8 +4,10 @@ import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.IMMUTABLE;
 import static java.util.Spliterator.NONNULL;
 import static java.util.Spliterators.spliteratorUnknownSize;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -14,17 +16,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import com.camptocamp.opendata.model.DataQuery;
-import com.camptocamp.opendata.model.GeodataRecord;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.Iterators;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
@@ -32,11 +28,20 @@ import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.Query;
 import org.geotools.data.Transaction;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureReaderIterator;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
+
+import com.camptocamp.opendata.model.DataQuery;
+import com.camptocamp.opendata.model.GeodataRecord;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.Iterators;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 abstract class GeoToolsFormat {
@@ -53,29 +58,53 @@ abstract class GeoToolsFormat {
             final List<String> typeNames = resolveTypeNames(dataStore, query.getLayerName());
 
             Stream<GeodataRecord> data = typeNames.stream()
-                    .flatMap(typeName -> readFeatureType(dataStore, typeName, query.getSource().getUri()));
+                    .flatMap(typeName -> readFeatureType(dataStore, query.withLayerName(typeName)));
             data = data.onClose(() -> dispose(dataStore, query.getSource().getUri()));
             return data;
         } catch (IOException e) {
-            throw new IllegalStateException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
-    protected Stream<GeodataRecord> readFeatureType(final @NonNull DataStore store, final @NonNull String typeName,
-            @NonNull URI uri) {
+    public long count(@NonNull DataQuery query) {
+        Objects.requireNonNull(query.getLayerName(), "layerName");
+        try {
+            final DataStore dataStore = resolveDataStore(query);
+            Query gtQuery = asGeoToolsQuery(query);
+            try {
+                SimpleFeatureSource fs = dataStore.getFeatureSource(query.getLayerName());
+                return fs.getCount(gtQuery);
+            } finally {
+                dispose(dataStore, query.getSource().getUri());
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
+    private Query asGeoToolsQuery(DataQuery query) {
+        Query gtQuery = new Query(query.getLayerName());
+        if (null != query.getOffset())
+            gtQuery.setStartIndex(query.getOffset());
+        if (null != query.getLimit())
+            gtQuery.setMaxFeatures(query.getLimit());
+        return gtQuery;
+    }
+
+    protected Stream<GeodataRecord> readFeatureType(final @NonNull DataStore store, final @NonNull DataQuery query) {
+        String typeName = query.getLayerName();
         log.debug("Getting FeatureReader for {}", typeName);
         FeatureReader<SimpleFeatureType, SimpleFeature> reader;
         try {
-            Query query = new Query(typeName);
+            Query gtQuery = asGeoToolsQuery(query);
             Stopwatch sw = Stopwatch.createStarted();
-            reader = store.getFeatureReader(query, Transaction.AUTO_COMMIT);
+            reader = store.getFeatureReader(gtQuery, Transaction.AUTO_COMMIT);
             log.debug("FeatureReader obtained for {} in {}", typeName, sw.stop());
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
 
-        Stream<SimpleFeature> features = readerToStream(reader, typeName, uri);
+        Stream<SimpleFeature> features = readerToStream(reader, typeName, query.getSource().getUri());
         Stream<GeodataRecord> records = features.map(new FeatureToRecord());
         return records;
     }

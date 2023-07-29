@@ -1,9 +1,13 @@
 package com.camptocamp.opendata.model;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Value;
+import lombok.With;
 import lombok.experimental.Accessors;
 
-@Data
+@Value
+@With
+@Builder
 @Accessors(chain = true)
 public class AuthCredentials {
 

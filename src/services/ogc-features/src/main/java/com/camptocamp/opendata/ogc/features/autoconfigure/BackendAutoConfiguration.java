@@ -16,21 +16,21 @@ import com.camptocamp.opendata.producer.Producers;
 @AutoConfiguration
 public class BackendAutoConfiguration {
 
-	@Bean
-	CollectionRepository collectionRepository(Producers producers) {
-		return new DataStoreRepository(producers);
-	}
+    @Bean
+    CollectionRepository collectionRepository(Producers producers) {
+        return new DataStoreRepository(producers);
+    }
 
-	@Bean
-	Producers producers(List<DatasetReader> readers) {
-		return new Producers(readers);
-	}
+    @Bean
+    Producers producers(List<DatasetReader> readers) {
+        return new Producers(readers);
+    }
 
-	@Bean
-	@Profile("!sample-data")
-	@ConditionalOnMissingBean
-	IndexedReader defaultIndexedReader() {
-		throw new UnsupportedOperationException();
-	}
+    @Bean
+    @Profile("!sample-data")
+    @ConditionalOnMissingBean
+    IndexedReader defaultIndexedReader() {
+        throw new UnsupportedOperationException();
+    }
 
 }

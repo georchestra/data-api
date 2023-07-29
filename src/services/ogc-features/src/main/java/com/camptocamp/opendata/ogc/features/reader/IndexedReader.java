@@ -32,6 +32,12 @@ public abstract class IndexedReader implements DatasetReader {
         return gtReader.read(gtQuery);
     }
 
+    @Override
+    public Long count(@NonNull DataQuery query) {
+        DataQuery gtQuery = toGtQuery(query);
+        return gtReader.count(gtQuery);
+    }
+
     protected abstract DataQuery toGtQuery(@NonNull DataQuery query);
 
 }

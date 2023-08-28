@@ -21,7 +21,7 @@ java -Dspring.profiles.active=sample-data -jar target/opendata-ogc-features-1.0-
 ### Docker
 
 ```bash
-docker run -d -it --rm --name ogc-features --env SPRING_PROFILES_ACTIVE=sample-data camptocamp/opendata-ogc-features:latest
+docker run -d -it --rm --name ogc-features -p 8080:8080 --env SPRING_PROFILES_ACTIVE=sample-data camptocamp/opendata-ogc-features:latest
 docker logs ogc-features
 ```
 

@@ -27,6 +27,20 @@ management:
   endpoints:
     web.exposure.include: info, health, metrics, prometheus
 
+producers:
+  geotools:
+      # these are all default values (i.e. same as not setting them at all),
+      # for the sake of documenation (IDE autocompletion enabled)
+    shp:
+      default-charset: UTF-8
+    wfs: 
+      lenient: true
+      #prefer-post:
+      #timeout: 30000
+      try-gzip: true
+      http-connection-pooling: true
+      http-connection-pool-size: 6
+
 dataviz:
   indexer:
     producers:

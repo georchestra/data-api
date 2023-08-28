@@ -100,7 +100,14 @@ paths:
         consist of multiple feature collections. A feature collection is often a
         collection of features of a similar type, based on a common schema.
 
-        Use content negotiation to request HTML or GeoJSON.
+        Use content negotiation to request the output format
+        
+        * application/json | application/geo+json: GeoJSON
+        * text/csv: Comma Separated Values
+        * application/x-shapefile: ZIP archive for an Esri shapefile, including side-car files .dbf, .shx, .prj
+        * application/vnd.ms-excel: Excel 97 spreadsheet (.xls)
+        * application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: Excel 2007 spreadsheet (.xlsx) 
+        
       operationId: getFeatures
       parameters:
         - $ref: '#/components/parameters/collectionId'
@@ -717,9 +724,6 @@ components:
                 rel: data
                 type: application/json
                 title: Information about the feature collections
-        text/html:
-          schema:
-            type: string
     ConformanceDeclaration:
       description: |-
         The URIs of all conformance classes supported by the server.
@@ -738,9 +742,6 @@ components:
               - 'http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30'
               - 'http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html'
               - 'http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson'
-        text/html:
-          schema:
-            type: string
     Collections:
       description: |-
         The feature collections shared by this API.
@@ -813,9 +814,6 @@ components:
                     rel: license
                     type: application/rdf+xml
                     title: CC0-1.0
-        text/html:
-          schema:
-            type: string
     Collection:
       description: |-
         Information about the feature collection with id `collectionId`.
@@ -866,9 +864,6 @@ components:
                 rel: license
                 type: application/rdf+xml
                 title: CC0-1.0
-        text/html:
-          schema:
-            type: string
     Features:
       description: |-
         The response is a document consisting of features in the collection.
@@ -933,7 +928,14 @@ components:
                   function: public use
                   floors: '10'
                   lastUpdate: '2013-12-03T10:15:37Z'
-        text/html:
+        'text/csv':
+          schema:
+            type: string
+        'application/x-shapefile':
+        # https://inspire.ec.europa.eu/media-types/application/x-shapefile
+          schema:
+            type: string
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
           schema:
             type: string
     Feature:
@@ -971,9 +973,6 @@ components:
               function: residential
               floors: '2'
               lastUpdate: '2015-08-01T12:34:56Z'
-        text/html:
-          schema:
-            type: string
     InvalidParameter:
       description: |-
         A query parameter has an invalid value.
@@ -981,9 +980,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/exception'
-        text/html:
-          schema:
-            type: string
     NotFound:
       description: |-
         The requested resource does not exist on the server. For example, a path parameter had an incorrect value.
@@ -997,6 +993,3 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/exception'
-        text/html:
-          schema:
-            type: string

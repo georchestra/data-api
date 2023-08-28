@@ -33,11 +33,12 @@
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webflux</artifactId>
+      <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${springdoc.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.data</groupId>
@@ -66,6 +67,27 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>com.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>5.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>5.2.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dhatim</groupId>
+      <artifactId>fastexcel</artifactId>
+      <version>0.15.6</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
@@ -73,8 +95,20 @@
   </dependencies>
 
   <build>
-    <finalName>gn-cloud-indexing</finalName>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>1.18.28</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
@@ -85,24 +119,18 @@
               <goal>build-info</goal>
             </goals>
           </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <executions>
           <execution>
-            <id>build-image</id>
+            <id>repackage</id>
             <goals>
-              <goal>build-image</goal>
+              <goal>repackage</goal>
             </goals>
+            <configuration>
+              <classifier>bin</classifier>
+            </configuration>
           </execution>
         </executions>
         <configuration>
           <mainClass>com.camptocamp.opendata.ogc.features.app.OgcFeaturesApp</mainClass>
-          <image>
-            <name>camptocamp/${project.name}</name>
-          </image>
         </configuration>
       </plugin>
       <plugin>
@@ -122,7 +150,7 @@
 								https://openapi-generator.tech/docs/generators/spring -->
                 <sourceFolder>src/main/java</sourceFolder>
                 <library>spring-boot</library>
-                <reactive>true</reactive>
+                <reactive>false</reactive>
                 <useSpringBoot3>true</useSpringBoot3>
                 <delegatePattern>true</delegatePattern>
                 <openApiNullable>false</openApiNullable>
@@ -131,10 +159,13 @@
                 <modelPackage>com.camptocamp.opendata.ogc.features.model</modelPackage>
                 <configPackage>com.camptocamp.opendata.ogc.features.server.config</configPackage>
                 <invokerPackage>com.camptocamp.opendata.ogc.features.server.invoker</invokerPackage>
+                <useBeanValidation>false</useBeanValidation>
+                <performBeanValidation>false</performBeanValidation>
+                <singleContentTypes>false</singleContentTypes>
               </configOptions>
               <typeMappings>
                 <typeMapping>FeatureCollectionGeoJSON=com.camptocamp.opendata.ogc.features.model.FeatureCollection</typeMapping>
-                <!--typeMapping>FeatureGeoJSON=com.camptocamp.opendata.model.GeodataRecord</typeMapping-->
+                <typeMapping>FeatureGeoJSON=com.camptocamp.opendata.model.GeodataRecord</typeMapping>
               </typeMappings>
             </configuration>
           </execution>
@@ -160,13 +191,17 @@
                 <goals>
                   <goal>build-image</goal>
                 </goals>
-                <configuration>
-                  <layers>
-                    <enabled>true</enabled>
-                  </layers>
-                </configuration>
               </execution>
             </executions>
+            <configuration>
+              <mainClass>com.camptocamp.opendata.ogc.features.app.OgcFeaturesApp</mainClass>
+              <image>
+                <name>camptocamp/${project.name}</name>
+              </image>
+              <layers>
+                <enabled>true</enabled>
+              </layers>
+            </configuration>
           </plugin>
         </plugins>
       </build>

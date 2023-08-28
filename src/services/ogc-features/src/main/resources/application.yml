@@ -1,4 +1,6 @@
-
+spring:
+  application:
+    name: ogc-features
 
 springdoc:
   # see https://springdoc.org/#how-can-i-disable-springdoc-openapi-cache

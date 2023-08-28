@@ -12,30 +12,21 @@ Those components are created with the following requirements:
 
 ### Building
 
-To build the services:
+Compile, test, install:
 
 ```shell script
 ./mvnw clean install
 ```
 
+Build docker image:
+
+```shell script
+./mvnw clean package -Pdocker
+```
+
 ### Running
 
-The simple build command above created the docker images.
-
-Now run the docker composition as follows, the first time it might need to download some additional images for the rabbitmq event broker and the postgresql config database:
-
-```shell script
-docker-compose up -d
-```
-
-### Calling services
-
-Test the service using the token:
-
-```shell script
-```
-
-
+See the [OGC Features API](src/services/ogc-features/README.md) documentation for more information.
 
 ### Development/debug
 

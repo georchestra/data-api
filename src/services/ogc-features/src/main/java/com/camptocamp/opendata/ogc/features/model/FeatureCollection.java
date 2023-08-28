@@ -2,30 +2,38 @@ package com.camptocamp.opendata.ogc.features.model;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.camptocamp.opendata.model.GeodataRecord;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+@JsonPropertyOrder({ "type", "timeStamp", "numberMatched", "numberReturned", "features", "links" })
+public interface FeatureCollection {
 
-@Data
-@Accessors(chain = true)
-public class FeatureCollection {
+    @JsonIgnore
+    default Optional<SimpleFeatureCollection> getOriginalContents() {
+        return Optional.empty();
+    }
 
-    private final String type = "FeatureCollection";
+    default String getType() {
+        return "FeatureCollection";
+    }
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private OffsetDateTime timeStamp;
+    default OffsetDateTime getTimeStamp() {
+        return OffsetDateTime.now();
+    }
 
-    private Long numberMatched;
-    private Long numberReturned;
+    Long getNumberMatched();
 
-    // private Supplier<Stream<? extends GeodataRecord>> features = Stream::empty;
-    private List<? extends GeodataRecord> features = List.of();
+    Long getNumberReturned();
 
-    private List<Link> links;
+    Stream<GeodataRecord> getFeatures();
+
+    List<Link> getLinks();
 }

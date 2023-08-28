@@ -17,3 +17,16 @@ springdoc:
 logging:
   level:
     root: info
+    com.zaxxer.hikari.pool.HikariPool: OFF
+
+---
+spring:
+  config.activate.on-profile: postgis
+  datasource:
+    url: jdbc:postgresql://${postgres.host:localhost}:${postgres.port:5432}/${postgres.db:postgis}
+    username: ${postgres.user:postgis} 
+    password: ${postgres.password:postgis}
+    hikari:
+      maximum-pool-size: ${postgres.pool.maxsize:20}
+      minimum-idle: ${postgres.pool.minsize:0}
+

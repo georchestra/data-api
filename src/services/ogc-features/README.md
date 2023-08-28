@@ -1,6 +1,6 @@
 # OGC Features API for indexed data
 
-Application service implementing [OGC API - FEATURES](https://ogcapi.ogc.org/features/) to serve bot geospatial not not geospatial indexed data.
+Application service implementing [OGC API - FEATURES](https://ogcapi.ogc.org/features/) to serve both geospatial non geospatial indexed data.
 
 ##Build
 

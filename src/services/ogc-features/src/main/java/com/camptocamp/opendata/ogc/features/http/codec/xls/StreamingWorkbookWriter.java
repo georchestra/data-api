@@ -29,7 +29,7 @@ class StreamingWorkbookWriter {
         this.zout = new ZipOutputStream(out, StandardCharsets.UTF_8);
         ZipEntry sheet1 = new ZipEntry("xl/worksheets/sheet1.xml");
         this.zout.putNextEntry(sheet1);
-        sheetWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(zout);
+        sheetWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(zout, "UTF-8");
         startSheet(sheetWriter);
     }
 

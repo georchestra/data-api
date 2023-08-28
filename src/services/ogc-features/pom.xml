@@ -197,6 +197,9 @@
               <mainClass>com.camptocamp.opendata.ogc.features.app.OgcFeaturesApp</mainClass>
               <image>
                 <name>camptocamp/${project.name}</name>
+                <env>
+                  <BPE_LANG>C.UTF-8</BPE_LANG>
+                </env>
               </image>
               <layers>
                 <enabled>true</enabled>

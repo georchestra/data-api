@@ -28,14 +28,6 @@ Build docker image:
 
 See the [OGC Features API](src/services/ogc-features/README.md) documentation for more information.
 
-### Development/debug
-
-To run one service directly without docker, use the `local` profile.
-
-```shell script
-mvn spring-boot:run -Dspring-boot.run.profiles=dev,local -f src/services/data-indexer/
-```
-
 ## Bugs
 
 TBD

@@ -3,6 +3,7 @@ package com.camptocamp.opendata.ogc.features.server.impl;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeType;
 import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.camptocamp.opendata.model.DataQuery;
 import com.camptocamp.opendata.model.GeodataRecord;
@@ -22,6 +25,7 @@ import com.camptocamp.opendata.ogc.features.model.Link;
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
 import com.camptocamp.opendata.ogc.features.server.api.CollectionsApiDelegate;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -51,7 +55,7 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
      */
     @Override
     public ResponseEntity<Collection> describeCollection(String collectionId) {
-        return repository.findCollection(collectionId).map(ResponseEntity::ok)
+        return repository.findCollection(collectionId).map(this::addLinks).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -94,53 +98,95 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
     }
 
     private Collections createCollections(List<Collection> collections) {
-        collections.forEach(this::addLinks);
-        ArrayList<Link> links = new ArrayList<>();
-        Collections cs = new Collections(links, collections);
+        Collections cs = new Collections(new ArrayList<>(), collections);
         addLinks(cs);
         return cs;
     }
 
-    private void addLinks(Collections collections) {
+    private Collections addLinks(Collections collections) {
+        NativeWebRequest request = getRequest().orElseThrow();
+        HttpServletRequest nativeRequest = (HttpServletRequest) request.getNativeRequest();
+        String basePath = nativeRequest.getRequestURL().toString();
+        collections.getCollections().forEach(c -> {
+            String colBase = UriComponentsBuilder.fromPath(basePath).pathSegment(c.getId()).build().toString();
+            addLinks(c, colBase);
+        });
+        return collections;
     }
 
-    private void addLinks(Collection collection) {
+    private Collection addLinks(Collection collection) {
+        NativeWebRequest request = getRequest().orElseThrow();
+        HttpServletRequest nativeRequest = (HttpServletRequest) request.getNativeRequest();
+        return addLinks(collection, nativeRequest.getRequestURL().toString());
+    }
+
+    private Collection addLinks(Collection collection, String baseUrl) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath(baseUrl);
+        builder.pathSegment("items");
+
+        MimeTypes defFormat = MimeTypes.GeoJSON;
+        UriComponents itemsc = builder.replaceQueryParam("f", defFormat.getShortName()).build();
+        Link items = link(itemsc.toString(), "items", defFormat.getMimeType().toString(), collection.getId());
+        collection.addLinksItem(items);
+
+        Arrays.stream(MimeTypes.values()).forEach(m -> {
+            String href = builder.replaceQueryParam("f", m.getShortName()).replaceQueryParam("limit", "-1").build()
+                    .toString();
+            String type = m.getMimeType().toString();
+            String title = "Bulk download (%s)".formatted(m.getDisplayName());
+            Link link = link(href, "enclosure", type, title);
+            collection.addLinksItem(link);
+        });
+        return collection;
     }
 
     private FeatureCollection addLinks(FeatureCollection fc, DataQuery dataQuery) {
-//		
-//		URI origin = exchange.getRequest().getURI();
-//		UriComponents self = UriComponentsBuilder.fromUri(origin).query(null).build();
-//		fc.getLinks().add(link("item", self.toString()));
-//
-//		if (fc.getNumberMatched() != null && fc.getNumberReturned() != null
-//				&& (fc.getNumberMatched() > fc.getNumberReturned())) {
-//
-//			Integer offset = extractOffset(exchange.getRequest());
-//			int limit = dataQuery.getLimit() == null ? 10 : dataQuery.getLimit();
-//			Integer next = offset == null ? limit : offset + limit;
-//			UriComponents nextUri = UriComponentsBuilder.fromUri(origin).replaceQueryParam("offset", next.toString())
-//					.replaceQueryParam("limit").build();
-//			fc.getLinks().add(link("next", nextUri.toString()));
-//		}
+        NativeWebRequest request = getRequest().orElseThrow();
+
+        HttpServletRequest nativeRequest = (HttpServletRequest) request.getNativeRequest();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(nativeRequest.getRequestURL().toString());
+        MimeTypes requestedFormat = MimeTypes.find(request.getHeader("Accept")).orElse(MimeTypes.GeoJSON);
+
+        UriComponents self = builder.query(nativeRequest.getQueryString()).build();
+        String mime = requestedFormat.getMimeType().toString();
+        fc.getLinks().add(link(self.toString(), "self", mime, "This document"));
+
+        Arrays.stream(MimeTypes.values()).filter(alt -> alt != requestedFormat).forEach(m -> {
+            UriComponents alternate = builder.replaceQueryParam("f", m.getShortName()).build();
+            fc.getLinks().add(link(alternate.toString(), "alternate", m.getMimeType().toString(),
+                    "This document as " + m.getDisplayName()));
+        });
+
+        if (fc.getNumberMatched() != null && fc.getNumberReturned() != null
+                && (fc.getNumberMatched() > fc.getNumberReturned())) {
+
+            Integer offset = extractOffset(request);
+            int limit = dataQuery.getLimit() == null ? 10 : dataQuery.getLimit();
+            Integer next = offset == null ? limit : offset + limit;
+            UriComponents nextUri = builder.replaceQueryParam("offset", next.toString())
+                    .replaceQueryParam("limit", limit).build();
+            fc.getLinks().add(1, link(nextUri.toString(), "next", mime, "Next page"));
+        }
         return fc;
     }
 
-//	private Integer extractOffset(ServerHttpRequest request) {
-//		String offsetParam = request.getQueryParams().getFirst("offset");
-//		if (null != offsetParam) {
-//			try {
-//				return Integer.parseInt(offsetParam);
-//			} catch (NumberFormatException e) {
-//				throw new IllegalArgumentException("offset is invalid: " + offsetParam);
-//			}
-//		}
-//		return null;
-//	}
+    private Integer extractOffset(NativeWebRequest request) {
+        String offsetParam = request.getParameter("offset");
+        if (null != offsetParam) {
+            try {
+                return Integer.parseInt(offsetParam);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("offset is invalid: " + offsetParam);
+            }
+        }
+        return null;
+    }
 
-    private Link link(String rel, String href) {
+    private Link link(String href, String rel, String type, String title) {
         Link link = new Link(href);
         link.setRel(rel);
+        link.setType(type);
+        link.setTitle(title);
         return link;
     }
 

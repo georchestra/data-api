@@ -24,6 +24,10 @@ public enum MimeTypes {
         public @Override void addHeaders(String collectionId, HttpHeaders headers) {
             contentDisposition(collectionId, "shp.zip", headers);
         }
+
+        public @Override boolean supportsItemType(String itemType) {
+            return "feature".equals(itemType);
+        }
     },
     CSV(new MimeType("text", "csv", StandardCharsets.UTF_8), "csv", "Comma Separated Values") {
         public @Override void addHeaders(String collectionId, HttpHeaders headers) {
@@ -65,5 +69,9 @@ public enum MimeTypes {
 
     private static void contentDisposition(String collectionId, String fileExtension, HttpHeaders headers) {
         headers.add("Content-Disposition", "attachment; filename=\"%s.%s\";".formatted(collectionId, fileExtension));
+    }
+
+    public boolean supportsItemType(String itemType) {
+        return true;
     }
 }

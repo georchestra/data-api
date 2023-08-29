@@ -30,6 +30,7 @@ import com.camptocamp.opendata.producer.Producers;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 @RequiredArgsConstructor
 public class DataStoreRepository implements CollectionRepository {
@@ -74,12 +75,13 @@ public class DataStoreRepository implements CollectionRepository {
 
     @Override
     public FeatureCollection query(@NonNull DataQuery query) {
+        Collection collection = findCollection(query.getLayerName()).orElseThrow();
         Query gtQuery = toQuery(query);
         SimpleFeatureCollection features = query(gtQuery);
 
         long matched = count(toQuery(query.withLimit(null)));
         long returned = count(gtQuery);
-        GeoToolsFeatureCollection ret = new GeoToolsFeatureCollection(features);
+        GeoToolsFeatureCollection ret = new GeoToolsFeatureCollection(collection, features);
         ret.setNumberMatched(matched);
         ret.setNumberReturned(returned);
         return ret;
@@ -124,7 +126,9 @@ public class DataStoreRepository implements CollectionRepository {
         GeometryDescriptor geom = schema.getGeometryDescriptor();
         if (geom == null) {
             c.setCrs(List.of());
+            c.setItemType("record");
         } else {
+            c.setItemType("feature");
             CoordinateReferenceSystem crs = geom.getCoordinateReferenceSystem();
             String srs = CRS.toSRS(crs);
             c.addCrsItem(srs);

@@ -29,6 +29,7 @@ public class GeoToolsFeatureCollection implements FeatureCollection {
 
     private final @NonNull Function<SimpleFeature, GeodataRecord> featureMapper = new FeatureToRecord();
 
+    private final @NonNull @Getter Collection collection;
     private final @NonNull SimpleFeatureCollection features;
 
     private @Setter @Getter Long numberMatched;

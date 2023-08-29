@@ -29,6 +29,9 @@ public interface FeatureCollection {
         return OffsetDateTime.now();
     }
 
+    @JsonIgnore
+    Collection getCollection();
+
     Long getNumberMatched();
 
     Long getNumberReturned();

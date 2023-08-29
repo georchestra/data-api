@@ -130,12 +130,14 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
         collection.addLinksItem(items);
 
         Arrays.stream(MimeTypes.values()).forEach(m -> {
-            String href = builder.replaceQueryParam("f", m.getShortName()).replaceQueryParam("limit", "-1").build()
-                    .toString();
-            String type = m.getMimeType().toString();
-            String title = "Bulk download (%s)".formatted(m.getDisplayName());
-            Link link = link(href, "enclosure", type, title);
-            collection.addLinksItem(link);
+            if (m.supportsItemType(collection.getItemType())) {
+                String href = builder.replaceQueryParam("f", m.getShortName()).replaceQueryParam("limit", "-1").build()
+                        .toString();
+                String type = m.getMimeType().toString();
+                String title = "Bulk download (%s)".formatted(m.getDisplayName());
+                Link link = link(href, "enclosure", type, title);
+                collection.addLinksItem(link);
+            }
         });
         return collection;
     }
@@ -152,6 +154,7 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
         fc.getLinks().add(link(self.toString(), "self", mime, "This document"));
 
         Arrays.stream(MimeTypes.values()).filter(alt -> alt != requestedFormat).forEach(m -> {
+
             UriComponents alternate = builder.replaceQueryParam("f", m.getShortName()).build();
             fc.getLinks().add(link(alternate.toString(), "alternate", m.getMimeType().toString(),
                     "This document as " + m.getDisplayName()));

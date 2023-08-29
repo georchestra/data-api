@@ -1,6 +1,7 @@
 spring:
   application:
     name: ogc-features
+  jackson.default-property-inclusion: non-empty
 
 springdoc:
   # see https://springdoc.org/#how-can-i-disable-springdoc-openapi-cache
@@ -12,3 +13,7 @@ springdoc:
     enabled: true
     #path: ${openapi.geoServerACL.base-path}/swagger-ui.html
     try-it-out-enabled: true    
+
+logging:
+  level:
+    root: info

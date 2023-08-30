@@ -130,8 +130,10 @@ public class DataStoreRepository implements CollectionRepository {
         } else {
             c.setItemType("feature");
             CoordinateReferenceSystem crs = geom.getCoordinateReferenceSystem();
-            String srs = CRS.toSRS(crs);
-            c.addCrsItem(srs);
+            if (null != crs) {
+                String srs = CRS.toSRS(crs);
+                c.addCrsItem(srs);
+            }
         }
         return c;
     }

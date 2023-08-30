@@ -1,0 +1,51 @@
+version: "3.8"
+
+volumes:
+  postgis_data:
+
+services:
+  postgis:
+    image: camptocamp/postgis-gdal:latest
+    build:
+     context: ./compose-postgis
+    shm_size: 2g
+    environment:
+      POSTGRES_DB: postgis
+      POSTGRES_USER: postgis
+      POSTGRES_PASSWORD: postgis
+      POSTGIS_GDAL_ENABLED_DRIVERS: ENABLE_ALL
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+      - ./src/services/ogc-features/src/main/resources/sample-data:/sample-data
+      - ./compose-entrypoint-initdb.d/11-create-opendataindex-schema.sql:/docker-entrypoint-initdb.d/11-create-opendataindex-schema.sql
+      #- ./compose-entrypoint-initdb.d/12-import-sample-data.sh:/docker-entrypoint-initdb.d/12-import-sample-data.sh
+      - ./compose-entrypoint-initdb.d/12-import-sample-data.sh:/import-sample-data.sh
+    ports:
+      # for local dev, do not expose in production
+      - 5432:5432
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+
+  ogc-features:
+    image: camptocamp/opendata-ogc-features:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: postgis
+      POSTGRES_HOST: postgis
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: postgis
+      POSTGRES_SCHEMA: opendataindex
+      POSTGRES_USER: postgis
+      POSTGRES_PASSWORD: postgis
+      POSTGRES_POOL_MAXSIZE: 20
+      POSTGRES_POOL_MINSIZE: 0
+    ports:
+      - 8080:8080
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 1G
+          

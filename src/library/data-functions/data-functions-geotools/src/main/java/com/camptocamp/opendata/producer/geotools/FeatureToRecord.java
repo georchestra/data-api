@@ -93,6 +93,8 @@ public class FeatureToRecord implements Function<SimpleFeature, GeodataRecord> {
     }
 
     private String toSrs(CoordinateReferenceSystem crs) {
+        if (null == crs)
+            return "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
         boolean fullScan = true;
         try {
             return CRS.lookupIdentifier(crs, fullScan);

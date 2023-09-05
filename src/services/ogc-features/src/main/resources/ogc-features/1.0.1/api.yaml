@@ -108,6 +108,15 @@ paths:
         * application/vnd.ms-excel: Excel 97 spreadsheet (.xls)
         * application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: Excel 2007 spreadsheet (.xlsx) 
         
+        You can also use the "f" parameter to pass the requested format to the request for convenience ; below
+        is the list of possible values:
+        
+        * json
+        * geojson
+        * shapefile
+        * csv
+        * ooxml
+
       operationId: getFeatures
       parameters:
         - $ref: '#/components/parameters/collectionId'

@@ -1,17 +1,16 @@
 package com.camptocamp.opendata.ogc.features.autoconfigure;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
+import com.camptocamp.opendata.ogc.features.http.codec.csv.CsvFeatureCollectionHttpMessageConverter;
+import com.camptocamp.opendata.ogc.features.http.codec.shp.ShapefileFeatureCollectionHttpMessageConverter;
+import com.camptocamp.opendata.ogc.features.http.codec.xls.Excel2007FeatureCollectionHttpMessageConverter;
+import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
+import com.camptocamp.opendata.ogc.features.repository.DataStoreRepository;
+import com.camptocamp.opendata.producer.geotools.FeatureToRecord;
 import org.geotools.data.DataStore;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
@@ -19,12 +18,10 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.jdbc.support.DatabaseStartupValidator;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.camptocamp.opendata.ogc.features.http.codec.csv.CsvFeatureCollectionHttpMessageConverter;
-import com.camptocamp.opendata.ogc.features.http.codec.shp.ShapefileFeatureCollectionHttpMessageConverter;
-import com.camptocamp.opendata.ogc.features.http.codec.xls.Excel2007FeatureCollectionHttpMessageConverter;
-import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
-import com.camptocamp.opendata.ogc.features.repository.DataStoreRepository;
-import com.camptocamp.opendata.producer.geotools.FeatureToRecord;
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 @AutoConfiguration
 public class BackendAutoConfiguration implements WebMvcConfigurer {

@@ -14,6 +14,8 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.filter.text.cql2.CQL;
+import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -101,6 +103,13 @@ public class DataStoreRepository implements CollectionRepository {
             q.setMaxFeatures(query.getLimit());
         if (null != query.getOffset())
             q.setStartIndex(query.getOffset());
+        if (null != query.getFilter()) {
+            try {
+                q.setFilter(CQL.toFilter(query.getFilter()));
+            } catch (CQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
         return q;
     }
 

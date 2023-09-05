@@ -18,9 +18,11 @@ public class DataQuery {
     private String layerName;
     private Integer offset;
     private Integer limit;
+    private String filter;
 
     public static DataQuery fromUri(URI dataUri) {
         DataSource dataSource = DataSource.fromUri(dataUri);
         return DataQuery.builder().source(dataSource).build();
     }
+
 }

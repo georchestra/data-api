@@ -1,5 +1,6 @@
 package com.camptocamp.opendata.ogc.features.autoconfigure;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,9 +9,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.geotools.data.DataStore;
-import org.geotools.data.FileDataStore;
-import org.geotools.data.csv.CSVDataStoreFactory;
 import org.geotools.data.memory.MemoryDataStore;
+import org.geotools.geopkg.GeoPkgDataStoreFactory;
+import org.geotools.jdbc.JDBCDataStore;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -59,62 +60,51 @@ public class SampleDataBackendAutoConfiguration {
      */
     private static class SampleData implements DisposableBean {
 
-        private Path directory;
+        private Path tempDirectory = Files.createTempDirectory("ogc-features-sample-data");
         private final @Getter DataStore dataStore;
 
         SampleData() throws IOException {
             dataStore = new MemoryDataStore();
+            log.info("Extracting sample data to {}", tempDirectory);
 
-            directory = Files.createTempDirectory("ogc-features-sample-data");
-            log.info("Extracting sample data to {}", directory);
-            Path locations = copy("locations.csv");
+            File sd = copyToTempDir("sample-datasets.gpkg");
 
-            Map<String, ?> params = Map.of(//
-                    CSVDataStoreFactory.URL_PARAM.key, locations.toUri().toURL(), //
-                    CSVDataStoreFactory.SEPERATORCHAR.key, ",", //
-                    CSVDataStoreFactory.STRATEGYP.key, CSVDataStoreFactory.SPECIFC_STRATEGY, //
-                    CSVDataStoreFactory.LATFIELDP.key, "LAT", //
-                    CSVDataStoreFactory.LnGFIELDP.key, "LON");
+            final GeoPkgDataStoreFactory factory = new GeoPkgDataStoreFactory();
+            final Map<String, ?> params = Map.of(GeoPkgDataStoreFactory.DBTYPE.key, "geopkg",
+                    GeoPkgDataStoreFactory.DATABASE.key, sd);
 
-            FileDataStore csvDs = new CSVDataStoreFactory().createDataStore(params);
-            ((MemoryDataStore) dataStore).addFeatures(csvDs.getFeatureSource("locations").getFeatures());
+            JDBCDataStore sdds = factory.createDataStore(params);
+            try {
+                String[] sampleDatasources = { "locations", "base-sirene-v3", "comptages-velo" };
 
-            Path base_sirene_v3 = copy("base-sirene-v3.csv");
-            params = Map.of(//
-                    CSVDataStoreFactory.URL_PARAM.key, base_sirene_v3.toUri().toURL(), //
-                    CSVDataStoreFactory.SEPERATORCHAR.key, ";");
-
-            csvDs = new CSVDataStoreFactory().createDataStore(params);
-            ((MemoryDataStore) dataStore).addFeatures(csvDs.getFeatureSource("base-sirene-v3").getFeatures());
-
-            Path comptages_velo = copy("comptages-velo.csv");
-            params = Map.of(//
-                    CSVDataStoreFactory.URL_PARAM.key, comptages_velo.toUri().toURL(), //
-                    CSVDataStoreFactory.SEPERATORCHAR.key, ";");
-
-            csvDs = new CSVDataStoreFactory().createDataStore(params);
-            ((MemoryDataStore) dataStore).addFeatures(csvDs.getFeatureSource("comptages-velo").getFeatures());
+                for (int i = 0; i < sampleDatasources.length; ++i) {
+                    ((MemoryDataStore) dataStore)
+                            .addFeatures(sdds.getFeatureSource(sampleDatasources[i]).getFeatures());
+                }
+            } finally {
+                sdds.dispose();
+            }
         }
 
         @Override
         public void destroy() throws Exception {
             dataStore.dispose();
-            if (directory != null && Files.isDirectory(directory)) {
-                log.info("Deleting sample data directory {}", directory);
-                FileSystemUtils.deleteRecursively(directory);
+            if (tempDirectory != null && Files.isDirectory(tempDirectory)) {
+                log.info("Deleting sample data directory {}", tempDirectory);
+                FileSystemUtils.deleteRecursively(tempDirectory);
             }
         }
 
-        private Path copy(String fileName) throws IOException {
+        private File copyToTempDir(String fileName) throws IOException {
             String uri = "/sample-data/" + fileName;
 
-            Path target = directory.resolve(fileName);
+            Path target = tempDirectory.resolve(fileName);
             try (var from = getClass().getResourceAsStream(uri); var to = new FileOutputStream(target.toFile())) {
 
                 Objects.requireNonNull(from, () -> "resource " + uri + " not found");
                 ByteStreams.copy(from, to);
             }
-            return target;
+            return target.toFile();
         }
     }
 }

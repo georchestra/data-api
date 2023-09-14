@@ -75,7 +75,8 @@ public class SampleDataBackendAutoConfiguration {
 
             JDBCDataStore sdds = factory.createDataStore(params);
             try {
-                String[] sampleDatasources = { "locations", "base-sirene-v3", "comptages-velo" };
+                String[] sampleDatasources = { "locations", "base-sirene-v3", "comptages-velo",
+                        "ouvrages-acquis-par-les-mediatheques" };
 
                 for (int i = 0; i < sampleDatasources.length; ++i) {
                     ((MemoryDataStore) dataStore)

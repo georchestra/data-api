@@ -2,11 +2,12 @@ package com.camptocamp.opendata.processor.geotools;
 
 import java.util.function.Function;
 import java.util.stream.Stream;
-import lombok.NonNull;
 
 import org.locationtech.jts.geom.Geometry;
 
 import com.camptocamp.opendata.model.GeodataRecord;
+
+import lombok.NonNull;
 
 public class GeoToolsProcessors {
 

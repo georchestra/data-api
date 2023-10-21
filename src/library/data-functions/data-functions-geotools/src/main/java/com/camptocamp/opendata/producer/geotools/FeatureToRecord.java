@@ -6,14 +6,14 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.geotools.api.feature.GeometryAttribute;
+import org.geotools.api.feature.Property;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.type.GeometryDescriptor;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.GeometryAttribute;
-import org.opengis.feature.Property;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.model.GeometryProperty;
@@ -63,7 +63,7 @@ public class FeatureToRecord implements Function<SimpleFeature, GeodataRecord> {
         return f.getProperties().stream().filter(notDefaultGeom).map(this::toProperty).toList();
     }
 
-    private SimpleProperty<? extends Object> toProperty(org.opengis.feature.Property property) {
+    private SimpleProperty<? extends Object> toProperty(Property property) {
         return property instanceof GeometryAttribute ? geometryProperty((GeometryAttribute) property)
                 : simpleProperty(property);
     }

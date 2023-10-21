@@ -1,14 +1,16 @@
 package com.camptocamp.opendata.processor.geotools;
 
 import java.util.function.Function;
-import javax.annotation.Nullable;
-import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.model.GeometryProperty;
+
+import lombok.NonNull;
 
 /**
  * Imperative (blocking) function that reprojects the geometry property of a

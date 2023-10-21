@@ -8,31 +8,29 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.geotools.data.DataStore;
-import org.geotools.data.Query;
+import org.geotools.api.data.DataStore;
+import org.geotools.api.data.Query;
+import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.type.GeometryDescriptor;
+import org.geotools.api.filter.FilterFactory;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.referencing.CRS;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.camptocamp.opendata.model.DataQuery;
 import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.ogc.features.model.Collection;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.camptocamp.opendata.ogc.features.model.GeoToolsFeatureCollection;
-import com.camptocamp.opendata.producer.Producers;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 @RequiredArgsConstructor
 public class DataStoreCollectionRepository implements CollectionRepository {
@@ -41,7 +39,7 @@ public class DataStoreCollectionRepository implements CollectionRepository {
     private final @NonNull DataStore dataStore;
     private final @NonNull Function<SimpleFeature, GeodataRecord> featureMapper;
 
-    private final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
+    private final FilterFactory ff = CommonFactoryFinder.getFilterFactory();
 
     @Override
     public List<Collection> getCollections() {

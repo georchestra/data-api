@@ -6,20 +6,22 @@ import static org.geotools.data.shapefile.ShapefileDataStoreFactory.DBFCHARSET;
 import static org.geotools.data.shapefile.ShapefileDataStoreFactory.ENABLE_SPATIAL_INDEX;
 import static org.geotools.data.shapefile.ShapefileDataStoreFactory.FILE_TYPE;
 import static org.geotools.data.shapefile.ShapefileDataStoreFactory.URLP;
+
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
 
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 
 import com.camptocamp.opendata.model.DataQuery;
 import com.camptocamp.opendata.model.DataSource;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 class PropertiesFileFormat extends GeoToolsFormat {
 

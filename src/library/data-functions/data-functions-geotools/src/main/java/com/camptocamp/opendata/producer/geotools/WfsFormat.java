@@ -7,6 +7,7 @@ import static org.geotools.data.wfs.impl.WFSDataAccessFactory.TIMEOUT;
 import static org.geotools.data.wfs.impl.WFSDataAccessFactory.TRY_GZIP;
 import static org.geotools.data.wfs.impl.WFSDataAccessFactory.URL;
 import static org.geotools.data.wfs.impl.WFSDataAccessFactory.USE_HTTP_CONNECTION_POOLING;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -15,14 +16,16 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 
 import com.camptocamp.opendata.model.DataQuery;
 import com.camptocamp.opendata.model.DataSource;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 class WfsFormat extends GeoToolsFormat {
 

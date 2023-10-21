@@ -2,6 +2,7 @@ package com.camptocamp.opendata.producer.geotools;
 
 import java.util.Arrays;
 import java.util.List;
+
 import lombok.Data;
 
 /**

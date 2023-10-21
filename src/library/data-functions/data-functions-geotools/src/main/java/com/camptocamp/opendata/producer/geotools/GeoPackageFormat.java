@@ -7,13 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 
 import com.camptocamp.opendata.model.DataQuery;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 class GeoPackageFormat extends GeoToolsFormat {
 

@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 
-import org.geotools.data.DataStore;
+import org.geotools.api.data.DataStore;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;

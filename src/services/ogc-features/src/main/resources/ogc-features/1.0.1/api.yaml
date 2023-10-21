@@ -108,12 +108,22 @@ paths:
         * application/vnd.ms-excel: Excel 97 spreadsheet (.xls)
         * application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: Excel 2007 spreadsheet (.xlsx) 
         
+        You can also use the "f" parameter to pass the requested format to the request for convenience ; below
+        is the list of possible values:
+        
+        * json
+        * geojson
+        * shapefile
+        * csv
+        * ooxml
+
       operationId: getFeatures
       parameters:
         - $ref: '#/components/parameters/collectionId'
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/bbox'
         - $ref: '#/components/parameters/datetime'
+        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           $ref: '#/components/responses/Features'
@@ -252,6 +262,14 @@ components:
         default: 10
       style: form
       explode: false
+    filter:
+      name: filter
+      in: query
+      description: |-
+        An optional OGC filter.
+      required: false
+      schema:
+        type: string
   schemas:
     collection:
       type: object

@@ -79,9 +79,10 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
             String collectionId, //
             Integer limit, //
             List<BigDecimal> bbox, //
-            String datetime) {
+            String datetime, //
+            String filter) {
 
-        DataQuery dataQuery = toDataQuery(collectionId, limit, bbox, datetime);
+        DataQuery dataQuery = toDataQuery(collectionId, limit, bbox, datetime, filter);
 
         FeatureCollection fc = repository.query(dataQuery);
         HttpHeaders headers = getFeaturesHeaders(collectionId);
@@ -196,13 +197,17 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
     DataQuery toDataQuery(String collectionId, //
             Integer limit, //
             List<BigDecimal> bbox, //
-            String datetime) {
+            String datetime, //
+            String filter) {
 
         // query collection id from whatever datasource is defined as index
         DataQuery q = DataQuery.fromUri(URI.create("index://default")).withLayerName(collectionId);
         if (null != limit && limit >= 0) {
             // a negative limit can be used to return the whole dataset
             q = q.withLimit(limit);
+        }
+        if (null != filter) {
+            q = q.withFilter(filter);
         }
         return q;
     }

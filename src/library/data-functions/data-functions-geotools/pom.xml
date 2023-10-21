@@ -14,11 +14,6 @@
       <groupId>com.camptocamp.opendata</groupId>
       <artifactId>opendata-functions-core</artifactId>
     </dependency>
-    <dependency>
-      <!-- TODO: REMOVE, used by WfsFormat to parse the query params, use something else instead of adding this dependency just for that? -->
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-    </dependency>
     <!-- Depdendencies for GeoTools URI based data streamer -->
     <dependency>
       <groupId>org.geotools</groupId>

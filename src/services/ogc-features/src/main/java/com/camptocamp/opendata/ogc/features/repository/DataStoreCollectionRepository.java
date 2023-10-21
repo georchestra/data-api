@@ -35,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 @RequiredArgsConstructor
-public class DataStoreRepository implements CollectionRepository {
+public class DataStoreCollectionRepository implements CollectionRepository {
 
     // private final @NonNull Producers producers;
     private final @NonNull DataStore dataStore;

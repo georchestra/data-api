@@ -3,7 +3,7 @@ package com.camptocamp.opendata.ogc.features.app;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import com.camptocamp.opendata.ogc.features.autoconfigure.GeoToolsStaticContextInitializer;
+import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.GeoToolsStaticContextInitializer;
 
 @SpringBootApplication
 public class OgcFeaturesApp {

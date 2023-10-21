@@ -1,4 +1,4 @@
-package com.camptocamp.opendata.ogc.features.autoconfigure;
+package com.camptocamp.opendata.ogc.features.autoconfigure.geotools;
 
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;

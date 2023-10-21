@@ -1,4 +1,4 @@
-package com.camptocamp.opendata.ogc.features.autoconfigure;
+package com.camptocamp.opendata.ogc.features.autoconfigure.api;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -10,8 +10,15 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.PostgisBackendAutoConfiguration;
+import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.SampleDataBackendAutoConfiguration;
 import com.camptocamp.opendata.ogc.features.http.codec.MimeTypes;
+import com.camptocamp.opendata.ogc.features.http.codec.csv.CsvFeatureCollectionHttpMessageConverter;
+import com.camptocamp.opendata.ogc.features.http.codec.shp.ShapefileFeatureCollectionHttpMessageConverter;
+import com.camptocamp.opendata.ogc.features.http.codec.xls.Excel2007FeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
 import com.camptocamp.opendata.ogc.features.server.api.CollectionsApiController;
 import com.camptocamp.opendata.ogc.features.server.api.CollectionsApiDelegate;
@@ -27,9 +34,20 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 
+/**
+ * {@link AutoConfiguration @AutoConfiguration} to set up the OGC Features API
+ * <p>
+ * Requires the following beans:
+ * <ul>
+ * <li>{@link CollectionRepository}
+ * </ul>
+ * 
+ * @see PostgisBackendAutoConfiguration
+ * @see SampleDataBackendAutoConfiguration
+ */
 @AutoConfiguration
 @Import(SpringDocConfiguration.class)
-public class ApiAutoConfiguration {
+public class ApiAutoConfiguration implements WebMvcConfigurer {
 
     @Bean
     HomeController homeController() {
@@ -37,13 +55,42 @@ public class ApiAutoConfiguration {
     }
 
     @Bean
-    CollectionsApiDelegate collectionsApiDelegate(CollectionRepository repo) {
-        return new CollectionsApiImpl(repo);
+    CollectionsApiController collectionsApiController(CollectionsApiDelegate delegate) {
+        return new CollectionsApiController(delegate);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see CsvFeatureCollectionHttpMessageConverter
+     * @see ShapefileFeatureCollectionHttpMessageConverter
+     * @see Excel2007FeatureCollectionHttpMessageConverter
+     */
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        converters.add(csvFeatureCollectionHttpMessageConverter());
+        converters.add(shapefileFeatureCollectionHttpMessageConverter());
+        converters.add(excel2007FeatureCollectionHttpMessageConverter());
     }
 
     @Bean
-    CollectionsApiController collectionsApiController(CollectionsApiDelegate delegate) {
-        return new CollectionsApiController(delegate);
+    Excel2007FeatureCollectionHttpMessageConverter excel2007FeatureCollectionHttpMessageConverter() {
+        return new Excel2007FeatureCollectionHttpMessageConverter();
+    }
+
+    @Bean
+    ShapefileFeatureCollectionHttpMessageConverter shapefileFeatureCollectionHttpMessageConverter() {
+        return new ShapefileFeatureCollectionHttpMessageConverter();
+    }
+
+    @Bean
+    CsvFeatureCollectionHttpMessageConverter csvFeatureCollectionHttpMessageConverter() {
+        return new CsvFeatureCollectionHttpMessageConverter();
+    }
+
+    @Bean
+    CollectionsApiDelegate collectionsApiDelegate(CollectionRepository repo) {
+        return new CollectionsApiImpl(repo);
     }
 
     /**

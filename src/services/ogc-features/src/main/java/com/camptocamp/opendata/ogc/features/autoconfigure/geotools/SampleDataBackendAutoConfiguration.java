@@ -1,4 +1,4 @@
-package com.camptocamp.opendata.ogc.features.autoconfigure;
+package com.camptocamp.opendata.ogc.features.autoconfigure.geotools;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,25 +13,27 @@ import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.util.FileSystemUtils;
 
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
-import com.camptocamp.opendata.ogc.features.repository.DataStoreRepository;
+import com.camptocamp.opendata.ogc.features.repository.DataStoreCollectionRepository;
+import com.camptocamp.opendata.producer.geotools.FeatureToRecord;
 import com.google.common.io.ByteStreams;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Supplies an {@link DataStoreRepository} that works off sample data from the
- * classpath.
+ * Supplies an {@link DataStoreCollectionRepository} that works off sample data
+ * from the classpath.
  * <p>
  * This is only to be activated with the {@literal sample-data} profile and
  * overrides the {@link CollectionRepository} supplied by
- * {@link BackendAutoConfiguration}
+ * {@link PostgisBackendAutoConfiguration}
  */
 @AutoConfiguration
 @Profile("sample-data")
@@ -42,6 +44,11 @@ public class SampleDataBackendAutoConfiguration {
 //	IndexedReader sampleDataIndexedReader(@NonNull GeoToolsDataReader gtReader) throws IOException {
 //		return new SampleDataReader(gtReader);
 //	}
+
+    @Bean
+    CollectionRepository sampleDataDataStoreCollectionRepository(@Qualifier("indexDataStore") DataStore indexStore) {
+        return new DataStoreCollectionRepository(indexStore, new FeatureToRecord());
+    }
 
     @Bean
     DataStore indexDataStore(SampleData sampleData) throws IOException {

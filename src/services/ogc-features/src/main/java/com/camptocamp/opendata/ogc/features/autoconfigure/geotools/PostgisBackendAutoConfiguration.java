@@ -1,11 +1,10 @@
-package com.camptocamp.opendata.ogc.features.autoconfigure;
+package com.camptocamp.opendata.ogc.features.autoconfigure.geotools;
 
-import com.camptocamp.opendata.ogc.features.http.codec.csv.CsvFeatureCollectionHttpMessageConverter;
-import com.camptocamp.opendata.ogc.features.http.codec.shp.ShapefileFeatureCollectionHttpMessageConverter;
-import com.camptocamp.opendata.ogc.features.http.codec.xls.Excel2007FeatureCollectionHttpMessageConverter;
-import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
-import com.camptocamp.opendata.ogc.features.repository.DataStoreRepository;
-import com.camptocamp.opendata.producer.geotools.FeatureToRecord;
+import java.io.IOException;
+import java.util.Map;
+
+import javax.sql.DataSource;
+
 import org.geotools.data.DataStore;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,33 +13,24 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.jdbc.support.DatabaseStartupValidator;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.sql.DataSource;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
+import com.camptocamp.opendata.ogc.features.repository.DataStoreCollectionRepository;
+import com.camptocamp.opendata.producer.geotools.FeatureToRecord;
 
 @AutoConfiguration
-public class BackendAutoConfiguration implements WebMvcConfigurer {
+@Profile("postgis")
+public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
 
     @Bean
-    CollectionRepository collectionRepository(@Qualifier("indexDataStore") DataStore indexStore) {
-        return new DataStoreRepository(indexStore, new FeatureToRecord());
-    }
-
-    @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        converters.add(new CsvFeatureCollectionHttpMessageConverter());
-        converters.add(new ShapefileFeatureCollectionHttpMessageConverter());
-        converters.add(new Excel2007FeatureCollectionHttpMessageConverter());
+    CollectionRepository postgisDataStoreCollectionRepository(@Qualifier("indexDataStore") DataStore indexStore) {
+        return new DataStoreCollectionRepository(indexStore, new FeatureToRecord());
     }
 
     @Bean(name = "indexDataStore")
     @DependsOn("databaseStartupValidator")
-    @Profile("postgis")
     DataStore postgisDataStore(DataSource dataSource, @Value("${pg.schema:opendataindex}") String schema)
             throws IOException {
         Map<String, ?> params = Map.of(//
@@ -58,7 +48,6 @@ public class BackendAutoConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    @Profile("postgis")
     DatabaseStartupValidator databaseStartupValidator(DataSource dataSource) {
         var dsv = new DatabaseStartupValidator();
         dsv.setDataSource(dataSource);

@@ -26,6 +26,7 @@ spring:
     url: jdbc:postgresql://${postgres.host:localhost}:${postgres.port:5432}/${postgres.db:postgis}
     username: ${postgres.user:postgis} 
     password: ${postgres.password:postgis}
+    driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: ${postgres.pool.maxsize:20}
       minimum-idle: ${postgres.pool.minsize:0}

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -23,8 +22,6 @@ import com.camptocamp.opendata.model.SimpleProperty;
 import com.camptocamp.opendata.ogc.features.http.codec.MimeTypes;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.opencsv.CSVWriter;
-
-import lombok.NonNull;
 
 /**
  * CSV encoder for {@link FeatureCollection} using

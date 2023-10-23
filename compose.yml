@@ -5,9 +5,7 @@ volumes:
 
 services:
   postgis:
-    image: camptocamp/postgis-gdal:latest
-    build:
-     context: ./compose-postgis
+    image: postgis/postgis:latest
     shm_size: 2g
     environment:
       POSTGRES_DB: postgis
@@ -16,10 +14,7 @@ services:
       POSTGIS_GDAL_ENABLED_DRIVERS: ENABLE_ALL
     volumes:
       - postgis_data:/var/lib/postgresql/data
-      - ./src/services/ogc-features/src/main/resources/sample-data:/sample-data
-      - ./compose-entrypoint-initdb.d/11-create-opendataindex-schema.sql:/docker-entrypoint-initdb.d/11-create-opendataindex-schema.sql
-      #- ./compose-entrypoint-initdb.d/12-import-sample-data.sh:/docker-entrypoint-initdb.d/12-import-sample-data.sh
-      - ./compose-entrypoint-initdb.d/12-import-sample-data.sh:/import-sample-data.sh
+      - ./compose-entrypoint.d/postgis-create-opendataindex-schema.sql:/docker-entrypoint-initdb.d/11-create-opendataindex-schema.sql
     ports:
       # for local dev, do not expose in production
       - 5432:5432
@@ -29,8 +24,29 @@ services:
           cpus: '4.0'
           memory: 4G
 
+  # Run with `docker compose run --rm import-sample-data` to import or re-import the sample datasets
+  import-sample-data:
+    image: osgeo/gdal:latest
+    depends_on:
+      - postgis
+    environment:
+      POSTGRES_HOST: postgis
+      POSTGRES_DB: postgis
+      POSTGRES_SCHEMA: opendataindex
+      POSTGRES_USER: postgis
+      POSTGRES_PASSWORD: postgis
+    volumes:
+      - ./src/services/ogc-features/src/main/resources/sample-data:/sample-data
+      - ./compose-entrypoint.d/gdal-import-sample-data.sh:/import-sample-data.sh
+    deploy:
+      mode: replicated
+      replicas: 0
+    command: /import-sample-data.sh
+    
   ogc-features:
     image: camptocamp/opendata-ogc-features:latest
+    depends_on:
+      - postgis
     environment:
       SPRING_PROFILES_ACTIVE: postgis
       POSTGRES_HOST: postgis
@@ -48,4 +64,4 @@ services:
         limits:
           cpus: '4.0'
           memory: 1G
-          
+

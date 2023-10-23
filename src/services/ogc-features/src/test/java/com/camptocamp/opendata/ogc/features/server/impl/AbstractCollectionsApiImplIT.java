@@ -1,40 +1,39 @@
-package com.camptocamp.opendata.ogc.features.app;
-
-import com.camptocamp.opendata.ogc.features.model.Collections;
-import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
-import com.camptocamp.opendata.ogc.features.server.impl.CollectionsApiImpl;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.context.request.NativeWebRequest;
+package com.camptocamp.opendata.ogc.features.server.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest
-@EnableAutoConfiguration
-@ActiveProfiles("sample-data")
-public class OgcFeaturesAppTest {
+import java.util.Set;
+import java.util.stream.Collectors;
 
-    private @Autowired CollectionsApiImpl collectionsApi;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.NativeWebRequest;
 
-    private @Autowired NativeWebRequest req;
+import com.camptocamp.opendata.ogc.features.model.Collection;
+import com.camptocamp.opendata.ogc.features.model.Collections;
+import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 
-    @Test
-    public void testCollectionApiInstanciation() {
-        assertNotNull(collectionsApi);
-    }
+public class AbstractCollectionsApiImplIT {
+
+    protected @Autowired CollectionsApiImpl collectionsApi;
+
+    protected @Autowired NativeWebRequest req;
 
     @Test
     public void testGetCollections() {
+
+        var expected = Set.of("base-sirene-v3", "comptages-velo", "locations", "ouvrages-acquis-par-les-mediatheques");
+
         ResponseEntity<Collections> response = collectionsApi.getCollections();
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
-        assertThat(response.getBody().getCollections().size()).isEqualTo(4);
+        Collections body = response.getBody();
+        assertThat(body.getCollections().size()).isEqualTo(expected.size());
+
+        var actual = body.getCollections().stream().map(Collection::getTitle).collect(Collectors.toSet());
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test

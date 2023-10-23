@@ -7,9 +7,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.geotools.api.data.DataStore;
 import org.geotools.data.memory.MemoryDataStore;
+import org.geotools.data.store.ContentFeatureCollection;
+import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.springframework.beans.factory.DisposableBean;
@@ -17,6 +23,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.util.Assert;
 import org.springframework.util.FileSystemUtils;
 
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
@@ -77,17 +84,27 @@ public class SampleDataBackendAutoConfiguration {
             File sd = copyToTempDir("sample-datasets.gpkg");
 
             final GeoPkgDataStoreFactory factory = new GeoPkgDataStoreFactory();
-            final Map<String, ?> params = Map.of(GeoPkgDataStoreFactory.DBTYPE.key, "geopkg",
-                    GeoPkgDataStoreFactory.DATABASE.key, sd);
+            final Map<String, ?> params = Map.of(//
+                    GeoPkgDataStoreFactory.DBTYPE.key, "geopkg", //
+                    GeoPkgDataStoreFactory.DATABASE.key, sd, //
+                    // Whether to return only tables listed as features in gpkg_contents, or give
+                    // access to all other tables
+                    // (careful, enabling this and then writing might cause the GeoPackage not to
+                    // conform to spec any longer, use at your discretion)
+                    GeoPkgDataStoreFactory.CONTENTS_ONLY.key, false//
+            );
 
             JDBCDataStore sdds = factory.createDataStore(params);
+            var typeNames = Stream.of(sdds.getTypeNames()).collect(Collectors.toCollection(TreeSet::new));
+            var expected = Set.of("base-sirene-v3", "comptages-velo", "locations",
+                    "ouvrages-acquis-par-les-mediatheques");
             try {
-                String[] sampleDatasources = { "locations", "base-sirene-v3", "comptages-velo",
-                        "ouvrages-acquis-par-les-mediatheques" };
-
-                for (int i = 0; i < sampleDatasources.length; ++i) {
-                    ((MemoryDataStore) dataStore)
-                            .addFeatures(sdds.getFeatureSource(sampleDatasources[i]).getFeatures());
+                for (String typeName : expected) {
+                    Assert.isTrue(typeNames.contains(typeName),
+                            "Expected FeatureType %s not found in gpkg".formatted(typeName));
+                    ContentFeatureSource featureSource = sdds.getFeatureSource(typeName);
+                    ContentFeatureCollection features = featureSource.getFeatures();
+                    ((MemoryDataStore) dataStore).addFeatures(features);
                 }
             } finally {
                 sdds.dispose();

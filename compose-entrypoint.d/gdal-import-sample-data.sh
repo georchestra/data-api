@@ -13,7 +13,13 @@ set -e
 # 	-oo KEEP_GEOM_COLUMNS=NO
 # done
 
-sleep 2 
-echo "Importing sample datasets sample-datasets.gpkg into database $POSTGRES_DB as user $POSTGRES_USER"
-ogr2ogr -f PostgreSQL PG:"host='localhost' active_schema='opendataindex' user='$POSTGRES_USER' dbname='$POSTGRES_DB' password='$POSTGRES_PASSWORD'" /sample-data/sample-datasets.gpkg
+#sleep 2 
+echo "Importing sample datasets sample-datasets.gpkg into database $POSTGRES_HOST:$POSTGRES_DB as user $POSTGRES_USER"
+export SQLITE_LIST_ALL_TABLES=YES
+ogr2ogr -f PostgreSQL \
+-lco LAUNDER=NO \
+PG:"host='$POSTGRES_HOST' active_schema='$POSTGRES_SCHEMA' user='$POSTGRES_USER' dbname='$POSTGRES_DB' password='$POSTGRES_PASSWORD'" \
+-oo LIST_ALL_TABLES=YES \
+-lco OVERWRITE=YES \
+/sample-data/sample-datasets.gpkg
 

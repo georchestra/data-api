@@ -30,4 +30,6 @@ spring:
     hikari:
       maximum-pool-size: ${postgres.pool.maxsize:20}
       minimum-idle: ${postgres.pool.minsize:0}
+      max-lifetime: 1000
+      
 

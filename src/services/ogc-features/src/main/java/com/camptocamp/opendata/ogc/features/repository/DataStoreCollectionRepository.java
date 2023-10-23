@@ -75,16 +75,21 @@ public class DataStoreCollectionRepository implements CollectionRepository {
 
     @Override
     public FeatureCollection query(@NonNull DataQuery query) {
-        Collection collection = findCollection(query.getLayerName()).orElseThrow();
-        Query gtQuery = toQuery(query);
-        SimpleFeatureCollection features = query(gtQuery);
+        try {
+            Collection collection = findCollection(query.getLayerName()).orElseThrow();
+            Query gtQuery = toQuery(query);
+            SimpleFeatureCollection features = query(gtQuery);
 
-        long matched = count(toQuery(query.withLimit(null)));
-        long returned = count(gtQuery);
-        GeoToolsFeatureCollection ret = new GeoToolsFeatureCollection(collection, features);
-        ret.setNumberMatched(matched);
-        ret.setNumberReturned(returned);
-        return ret;
+            long matched = count(toQuery(query.withLimit(null)));
+            long returned = count(gtQuery);
+            GeoToolsFeatureCollection ret = new GeoToolsFeatureCollection(collection, features);
+            ret.setNumberMatched(matched);
+            ret.setNumberReturned(returned);
+            return ret;
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     private int count(Query query) {

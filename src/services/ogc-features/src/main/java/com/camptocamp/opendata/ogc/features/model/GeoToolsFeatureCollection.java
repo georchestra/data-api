@@ -14,6 +14,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.jdbc.JDBCDataStore;
 
 import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.producer.geotools.FeatureToRecord;

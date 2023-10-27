@@ -1,6 +1,7 @@
 package com.camptocamp.opendata.ogc.features.server.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -10,6 +11,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.geotools.api.filter.Filter;
+import org.geotools.api.filter.PropertyIsEqualTo;
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.filter.expression.PropertyName;
+import org.geotools.filter.text.ecql.ECQL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -151,5 +157,44 @@ public abstract class AbstractCollectionsApiImplIT {
 //		var sorted = new ArrayList<>(records);
 //		java.util.Collections.sort(sorted, comparator);
 //		assertThat(records).isEqualTo(sorted);
+    }
+
+    @Test
+    public void testGetItemsWithFilter_property_name_with_spaces() throws Exception {
+        final String collectionName = "base-sirene-v3";
+        final String propetyName = "indice de répétition de l'établissement";
+
+        MockHttpServletRequest actualRequest = (MockHttpServletRequest) req.getNativeRequest();
+        actualRequest.addHeader("Accept", "application/json");
+
+        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(FeaturesQuery.of(collectionName));
+
+        FeatureCollection body = response.getBody();
+
+        int expected = (int) body.getFeatures()
+                .filter(c -> "B".equals(c.getProperty(propetyName).orElseThrow().getValue())).count();
+        assertThat(expected).isGreaterThan(0);
+
+        final String cqlFilter = "\"%s\" = 'B'".formatted(propetyName);
+
+        assertECQL_FilterCanBeParsed(propetyName, cqlFilter);
+
+        response = collectionsApi.getFeatures(FeaturesQuery.of(collectionName).withFilter(cqlFilter));
+        body = response.getBody();
+        assertThat(body.getFeatures().count()).isEqualTo(expected);
+
+        response = collectionsApi
+                .getFeatures(FeaturesQuery.of(collectionName).withFilter(cqlFilter).withLimit(expected));
+
+        body = response.getBody();
+        assertThat(body.getFeatures().count()).isEqualTo(expected);
+    }
+
+    private void assertECQL_FilterCanBeParsed(final String propetyName, final String filter) {
+        Filter ff = assertDoesNotThrow(() -> ECQL.toFilter(filter));
+        assertThat(ff).isInstanceOf(PropertyIsEqualTo.class);
+        Expression expression1 = ((PropertyIsEqualTo) ff).getExpression1();
+        assertThat(expression1).isInstanceOf(PropertyName.class);
+        assertThat(((PropertyName) expression1).getPropertyName()).isEqualTo(propetyName);
     }
 }

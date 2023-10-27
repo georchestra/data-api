@@ -25,6 +25,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
+import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.referencing.CRS;
 
 import com.camptocamp.opendata.model.DataQuery;
@@ -159,7 +160,7 @@ public class DataStoreCollectionRepository implements CollectionRepository {
             q.setStartIndex(query.getOffset());
         if (null != query.getFilter()) {
             try {
-                q.setFilter(CQL.toFilter(query.getFilter()));
+                q.setFilter(ECQL.toFilter(query.getFilter()));
             } catch (CQLException e) {
                 throw new RuntimeException(e);
             }

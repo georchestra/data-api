@@ -13,7 +13,7 @@
     <module>services</module>
   </modules>
   <properties>
-    <gt.version>30.0</gt.version>
+    <gt.version>31-SNAPSHOT</gt.version>
     <jts.version>1.19.0</jts.version>
     <springdoc.version>2.1.0</springdoc.version>
   </properties>

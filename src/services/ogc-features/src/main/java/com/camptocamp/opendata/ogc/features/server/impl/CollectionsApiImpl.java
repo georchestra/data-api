@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeType;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -167,6 +168,10 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
             Integer offset = extractOffset(request);
             int limit = dataQuery.getLimit() == null ? 10 : dataQuery.getLimit();
             Integer next = offset == null ? limit : offset + limit;
+            // f parameter preempts the "Accept" header
+            final String formatParam = request.getParameter("f");
+            builder.replaceQueryParam("f",
+                    StringUtils.hasText(formatParam) ? formatParam : requestedFormat.getShortName());
             UriComponents nextUri = builder.replaceQueryParam("offset", next.toString())
                     .replaceQueryParam("limit", limit).build();
             fc.getLinks().add(1, link(nextUri.toString(), "next", mime, "Next page"));

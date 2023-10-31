@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 import org.geotools.api.data.DataStore;
@@ -31,20 +32,25 @@ import com.camptocamp.opendata.ogc.features.model.GeoToolsFeatureCollection;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
+@Slf4j
 public class DataStoreCollectionRepository implements CollectionRepository {
 
-    // private final @NonNull Producers producers;
-    private final @NonNull DataStore dataStore;
+    private final @NonNull DataStoreProvider dataStoreProvider;
     private final @NonNull Function<SimpleFeature, GeodataRecord> featureMapper;
 
     private final FilterFactory ff = CommonFactoryFinder.getFilterFactory();
 
+    private DataStore dataStore() {
+        return dataStoreProvider.get();
+    }
+
     @Override
     public List<Collection> getCollections() {
         try {
-            String[] typeNames = dataStore.getTypeNames();
+            String[] typeNames = dataStore().getTypeNames();
             return Arrays.stream(typeNames).map(this::loadCollection).toList();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -62,34 +68,72 @@ public class DataStoreCollectionRepository implements CollectionRepository {
 
     @Override
     public Optional<GeodataRecord> getRecord(String collectionId, String featureId) {
-        SimpleFeature feature;
 
-        Query query = new Query(collectionId, ff.id(ff.featureId(featureId)));
-        SimpleFeatureCollection features = query(query);
-        try (SimpleFeatureIterator it = features.features()) {
-            feature = it.hasNext() ? it.next() : null;
+        final Query query = new Query(collectionId, ff.id(ff.featureId(featureId)));
+
+        return runWithRetry("getRecord(%s:%s)".formatted(collectionId, featureId), () -> {
+            SimpleFeatureCollection features = query(query);
+            SimpleFeature feature;
+            try (SimpleFeatureIterator it = features.features()) {
+                feature = it.hasNext() ? it.next() : null;
+            }
+
+            return Optional.ofNullable(feature).map(featureMapper);
+        });
+    }
+
+    private <T> T runWithRetry(String description, Callable<T> command) {
+        try {
+            return command.call();
+        } catch (Exception e) {
+            log.info("Retrying command %s".formatted(description));
+            dataStoreProvider.reInit();
+            try {
+                return command.call();
+            } catch (Exception e2) {
+                log.info("Retry command failed. Giving up for %s".formatted(description));
+                if (e2 instanceof RuntimeException) {
+                    throw (RuntimeException) e2;
+                }
+                throw new RuntimeException(e);
+            }
         }
-
-        return Optional.ofNullable(feature).map(featureMapper);
     }
 
     @Override
     public FeatureCollection query(@NonNull DataQuery query) {
-        Collection collection = findCollection(query.getLayerName()).orElseThrow();
-        Query gtQuery = toQuery(query);
-        SimpleFeatureCollection features = query(gtQuery);
+        final Collection collection = findCollection(query.getLayerName()).orElseThrow();
+        final Query gtQuery = toQuery(query);
+        return runWithRetry("query(%s)".formatted(query.getLayerName()), () -> {
+            ensureSchemaIsInSync(gtQuery);
+            SimpleFeatureCollection fc = query(gtQuery);
+            long matched = count(toQuery(query.withLimit(null)));
+            long returned = count(gtQuery);
+            GeoToolsFeatureCollection ret = new GeoToolsFeatureCollection(collection, fc);
+            ret.setNumberMatched(matched);
+            ret.setNumberReturned(returned);
+            return ret;
+        });
+    }
 
-        long matched = count(toQuery(query.withLimit(null)));
-        long returned = count(gtQuery);
-        GeoToolsFeatureCollection ret = new GeoToolsFeatureCollection(collection, features);
-        ret.setNumberMatched(matched);
-        ret.setNumberReturned(returned);
-        return ret;
+    /**
+     * Workaround to make sure the datastore cached featuretype is in sync with the
+     * one in the database in case it has changed under the hood
+     */
+    private void ensureSchemaIsInSync(Query gtQuery) {
+        Query noopQuery = new Query(gtQuery);
+        noopQuery.setMaxFeatures(0);
+        SimpleFeatureCollection fc = query(noopQuery);
+        try (SimpleFeatureIterator it = fc.features()) {
+
+        } catch (RuntimeException e) {
+            throw e;
+        }
     }
 
     private int count(Query query) {
         try {
-            return dataStore.getFeatureSource(query.getTypeName()).getCount(query);
+            return dataStore().getFeatureSource(query.getTypeName()).getCount(query);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -114,7 +158,7 @@ public class DataStoreCollectionRepository implements CollectionRepository {
     private SimpleFeatureCollection query(Query query) {
         try {
             String typeName = query.getTypeName();
-            SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
+            SimpleFeatureSource featureSource = dataStore().getFeatureSource(typeName);
             return featureSource.getFeatures(query);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -126,7 +170,7 @@ public class DataStoreCollectionRepository implements CollectionRepository {
         c.setTitle(typeName);
         SimpleFeatureType schema;
         try {
-            schema = dataStore.getSchema(typeName);
+            schema = dataStore().getSchema(typeName);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

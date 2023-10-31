@@ -16,6 +16,8 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.feature.type.GeometryDescriptor;
 import org.geotools.api.filter.FilterFactory;
+import org.geotools.api.filter.sort.SortBy;
+import org.geotools.api.filter.sort.SortOrder;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -152,7 +154,22 @@ public class DataStoreCollectionRepository implements CollectionRepository {
                 throw new RuntimeException(e);
             }
         }
+        List<SortBy> sortBy = sortBy(query);
+        if (sortBy.isEmpty()) {
+            // default to natural order for paging consistency
+            q.setSortBy(SortBy.NATURAL_ORDER);
+        } else {
+            q.setSortBy(sortBy.toArray(SortBy[]::new));
+        }
         return q;
+    }
+
+    public List<SortBy> sortBy(DataQuery q) {
+        return q.getSortBy().stream().map(this::toSortBy).toList();
+    }
+
+    private SortBy toSortBy(DataQuery.SortBy order) {
+        return ff.sort(order.propertyName(), order.ascending() ? SortOrder.DESCENDING : SortOrder.DESCENDING);
     }
 
     private SimpleFeatureCollection query(Query query) {

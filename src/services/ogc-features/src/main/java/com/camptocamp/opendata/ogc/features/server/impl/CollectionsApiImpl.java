@@ -81,10 +81,13 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
             Integer limit, //
             List<BigDecimal> bbox, //
             String datetime, //
-            String filter) {
+            String filter, //
+            String filterLang, //
+            String filterCrs, //
+            List<String> sortby) {
 
         FeaturesQuery fq = FeaturesQuery.of(collectionId).withLimit(limit).withBbox(bbox).withDatetime(datetime)
-                .withFilter(filter);
+                .withFilter(filter).withFilterLang(filterLang).withFilterCrs(filterCrs);
         return getFeatures(fq);
     }
 
@@ -207,8 +210,29 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
     }
 
     DataQuery toDataQuery(FeaturesQuery query) {
-        DataQuery q = DataQuery.fromUri(URI.create("index://default")).withLayerName(query.getCollectionId())
-                .withLimit(query.getLimit()).withOffset(query.getOffset()).withFilter(query.getFilter());
+
+        List<DataQuery.SortBy> sortby = Optional.ofNullable(query.getSortby()).orElse(List.of()).stream()
+                .map(this::toSortBy).toList();
+
+        DataQuery q = DataQuery.fromUri(URI.create("index://default"))//
+                .withLayerName(query.getCollectionId())//
+                .withLimit(query.getLimit())//
+                .withOffset(query.getOffset())//
+                .withFilter(query.getFilter())//
+                .withSortBy(sortby);
         return q;
     }
+
+    private DataQuery.SortBy toSortBy(String s) {
+        String propertyName = s;
+        boolean ascending = true;
+        if (s.startsWith("+")) {
+            propertyName = propertyName.substring(1);
+        } else if (s.startsWith("-")) {
+            ascending = false;
+            propertyName = propertyName.substring(1);
+        }
+        return new DataQuery.SortBy(propertyName, ascending);
+    }
+
 }

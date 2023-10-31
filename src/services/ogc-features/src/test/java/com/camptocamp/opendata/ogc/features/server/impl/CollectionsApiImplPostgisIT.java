@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.geotools.api.data.DataStore;
-import org.geotools.jdbc.JDBCDataStore;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -35,6 +35,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.ogc.features.app.OgcFeaturesApp;
+import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.PostgisBackendAutoConfiguration.PostgisDataStoreProvider;
 import com.camptocamp.opendata.ogc.features.model.Collection;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.zaxxer.hikari.HikariConfig;
@@ -48,9 +49,10 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
 
     public static JdbcDatabaseContainer<?> postgis;
 
-    private @Autowired DataSource dataSource;
+    private @Autowired PostgisDataStoreProvider pgDataStoreProvider;
 
-    private @Autowired DataStore pgDataStore;
+    private final Set<String> defaultTables = Set.of("locations", "ouvrages-acquis-par-les-mediatheques",
+            "base-sirene-v3", "comptages-velo");
 
     static @BeforeAll void setUp(@TempDir Path tmpdir) throws IOException {
 
@@ -63,6 +65,12 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
                 .withFileSystemBind(initScriptHostPath, "/docker-entrypoint-initdb.d/11-import-sample-data.sql");
 
         postgis.start();
+    }
+
+    @BeforeEach
+    void beforeEeach() {
+        reinitDataSource();
+        pgDataStoreProvider.reInit();
     }
 
     private static String copyInitScript(Path tmpdir) throws IOException {
@@ -87,29 +95,77 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
     }
 
     @Test
-    public void testGetCollections_survives_schema_change() throws SQLException {
-        collectionsApi.getCollections().getBody().getCollections().stream()
-                .filter(c -> "locations".equals(c.getTitle())).findFirst().orElseThrow();
-        dropColumn();
+    public void testGetCollections_sees_new_table(TestInfo testInfo) throws SQLException {
+        final String table = testInfo.getDisplayName();
 
-        collectionsApi.getCollections().getBody().getCollections().stream()
-                .filter(c -> "locations".equals(c.getTitle())).findFirst().orElseThrow();
+        Set<String> collections = getCollectionNames();
+
+        assertThat(collections).doesNotContain(table);
+        assertThat(collections).containsAll(defaultTables);
+
+        createTestTable(table);
+
+        collections = getCollectionNames();
+
+        assertThat(collections).contains(table);
+        assertThat(collections).containsAll(defaultTables);
+    }
+
+    private Set<String> getCollectionNames() {
+        return collectionsApi.getCollections().getBody().getCollections().stream().map(Collection::getTitle)
+                .collect(Collectors.toSet());
     }
 
     @Test
-    public void testGetCollections_survives_drop_table() throws SQLException {
-        var collections = collectionsApi.getCollections().getBody().getCollections().stream().map(Collection::getTitle)
-                .collect(Collectors.toSet());
+    public void testGetCollections_survives_schema_change() throws SQLException {
+        final String table = "locations";
 
-        assertThat(collections).isEqualTo(
-                Set.of("locations", "ouvrages-acquis-par-les-mediatheques", "base-sirene-v3", "comptages-velo"));
+        Set<String> collections = getCollectionNames();
+        assertThat(collections).contains(table);
 
-        dropTable();
+        renameColumn(table, "city", "ciudad");
 
-        collections = collectionsApi.getCollections().getBody().getCollections().stream().map(Collection::getTitle)
-                .collect(Collectors.toSet());
-        assertThat(collections)
-                .isEqualTo(Set.of("ouvrages-acquis-par-les-mediatheques", "base-sirene-v3", "comptages-velo"));
+        collections = getCollectionNames();
+        assertThat(collections).contains(table);
+
+        dropColumn(table, "ciudad");
+
+        collections = getCollectionNames();
+        assertThat(collections).contains(table);
+    }
+
+    @Test
+    public void testGetCollections_survives_table_rename(TestInfo testInfo) throws SQLException {
+        final String table = testInfo.getDisplayName();
+        final String newName = table + "_renamed";
+        createTestTable(table);
+
+        Set<String> collections = getCollectionNames();
+        assertThat(collections).contains(table);
+
+        renameTable(table, newName);
+
+        collections = getCollectionNames();
+        assertThat(collections).doesNotContain(table);
+        assertThat(collections).contains(newName);
+    }
+
+    @Test
+    public void testGetCollections_survives_drop_table(TestInfo testInfo) throws SQLException {
+        final String table = testInfo.getDisplayName();
+        createTestTable(table);
+        pgDataStoreProvider.reInit();
+
+        var collections = getCollectionNames();
+
+        assertThat(collections).contains(table);
+        assertThat(collections).containsAll(defaultTables);
+
+        dropTable(table);
+
+        collections = getCollectionNames();
+        assertThat(collections).doesNotContain(table);
+        assertThat(collections).containsAll(defaultTables);
     }
 
     @Test
@@ -120,7 +176,12 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
         ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures("locations", 10, null, null, null);
         assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
 
-        dropColumn();
+        renameColumn("locations", "year", "año");
+
+        response = collectionsApi.getFeatures("locations", 10, null, null, null);
+        assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
+
+        dropColumn("locations", "año");
 
         response = collectionsApi.getFeatures("locations", 10, null, null, null);
         assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
@@ -133,29 +194,56 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
 
         GeodataRecord before = collectionsApi.getFeatures("locations", 1, null, null, null).getBody().getFeatures()
                 .toList().get(0);
-        assertThat(before.getProperty("year")).isPresent();
+        assertThat(before.getProperty("number")).isPresent();
 
         final String id = before.getId();
 
-        dropColumn();
+        renameColumn("locations", "number", "número");
 
         GeodataRecord after = collectionsApi.getFeature("locations", id).getBody();
-        assertThat(after.getProperty("year")).isEmpty();
+        assertThat(after.getProperty("number")).isEmpty();
+        assertThat(after.getProperty("número")).isPresent();
+
+        dropColumn("locations", "número");
+
+        after = collectionsApi.getFeature("locations", id).getBody();
+        assertThat(after.getProperty("número")).isEmpty();
     }
 
-    private void dropTable() throws SQLException {
-        alterDatabase("DROP TABLE opendataindex.locations");
-    }
+    private void dropTable(String name) throws SQLException {
+		alterDatabase("""
+				DROP TABLE opendataindex."%s"
+				""".formatted(name));
+	}
 
-    private void dropColumn() throws SQLException {
-        alterDatabase("ALTER TABLE opendataindex.locations DROP COLUMN year");
-    }
+    private void renameTable(String table, String as) throws SQLException {
+		alterDatabase("""
+				ALTER TABLE opendataindex."%s" RENAME TO "%s"
+				""".formatted(table, as));
+	}
+
+    private void renameColumn(String table, String from, String to) throws SQLException {
+		alterDatabase("""
+				ALTER TABLE opendataindex."%s" RENAME COLUMN "%s" TO "%s"
+				""".formatted(table, from, to));
+	}
+
+    private void dropColumn(String table, String col) throws SQLException {
+		alterDatabase("""
+				ALTER TABLE opendataindex.%s DROP COLUMN "%s"
+				""".formatted(table, col));
+	}
+
+    private void createTestTable(String tableName) throws SQLException {
+		alterDatabase("""
+				CREATE TABLE opendataindex."%s" (id BIGINT, name TEXT)
+				""".formatted(tableName));
+	}
 
     private void alterDatabase(String ddl) throws SQLException {
         // ALTER TABLE needs to grab an exclusive lock on the table, which open
         // connections prevent. close the datasource then
-        HikariDataSource hikariDs = (HikariDataSource) dataSource;
-        hikariDs.close();
+        closeDataSource();
 
         Connection c = DriverManager.getConnection(postgis.getJdbcUrl(), postgis.getUsername(), postgis.getPassword());
         try (Statement st = c.createStatement()) {
@@ -165,6 +253,7 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
                 c.commit();
             } catch (SQLException e) {
                 c.rollback();
+                throw e;
             } finally {
                 c.setAutoCommit(true);
             }
@@ -174,11 +263,25 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
 
         // replace the datasource used by the DataStore, but do not dispose the
         // datastore
+        resetDataSource();
+    }
+
+    private void reinitDataSource() {
+        closeDataSource();
+        resetDataSource();
+    }
+
+    private void closeDataSource() {
+        HikariDataSource hikariDs = (HikariDataSource) pgDataStoreProvider.getDataSource();
+        hikariDs.close();
+    }
+
+    private void resetDataSource() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(postgis.getJdbcUrl());
         config.setUsername(postgis.getUsername());
         config.setPassword(postgis.getPassword());
         DataSource newDataSource = new HikariDataSource(config);
-        ((JDBCDataStore) pgDataStore).setDataSource(newDataSource);
+        pgDataStoreProvider.setDataSource(newDataSource);
     }
 }

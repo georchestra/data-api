@@ -3,6 +3,7 @@ package com.camptocamp.opendata.ogc.features.autoconfigure.geotools;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -19,7 +20,6 @@ import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
@@ -28,10 +28,10 @@ import org.springframework.util.FileSystemUtils;
 
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
 import com.camptocamp.opendata.ogc.features.repository.DataStoreCollectionRepository;
+import com.camptocamp.opendata.ogc.features.repository.DataStoreProvider;
 import com.camptocamp.opendata.producer.geotools.FeatureToRecord;
 import com.google.common.io.ByteStreams;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -47,19 +47,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SampleDataBackendAutoConfiguration {
 
-//	@Bean
-//	IndexedReader sampleDataIndexedReader(@NonNull GeoToolsDataReader gtReader) throws IOException {
-//		return new SampleDataReader(gtReader);
-//	}
-
     @Bean
-    CollectionRepository sampleDataDataStoreCollectionRepository(@Qualifier("indexDataStore") DataStore indexStore) {
-        return new DataStoreCollectionRepository(indexStore, new FeatureToRecord());
-    }
-
-    @Bean
-    DataStore indexDataStore(SampleData sampleData) throws IOException {
-        return sampleData.getDataStore();
+    CollectionRepository sampleDataDataStoreCollectionRepository(SampleData dsProvider) {
+        return new DataStoreCollectionRepository(dsProvider, new FeatureToRecord());
     }
 
     @Bean
@@ -72,19 +62,47 @@ public class SampleDataBackendAutoConfiguration {
      * shutdown, since the geotools CSV datastore does not support URL resources,
      * only Files
      */
-    private static class SampleData implements DisposableBean {
+    private static class SampleData implements DataStoreProvider, DisposableBean {
 
-        private Path tempDirectory = Files.createTempDirectory("ogc-features-sample-data");
-        private final @Getter DataStore dataStore;
+        private Path tempDirectory;
 
-        SampleData() throws IOException {
+        private DataStore dataStore;
+
+        @Override
+        public DataStore get() {
+            if (null == dataStore) {
+                synchronized (this) {
+                    if (null == dataStore) {
+                        try {
+                            create();
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    }
+                }
+            }
+            return dataStore;
+        }
+
+        @Override
+        public void reInit() {
+            try {
+                dispose();
+                create();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+
+        private void create() throws IOException {
+            tempDirectory = Files.createTempDirectory("ogc-features-sample-data");
             dataStore = new MemoryDataStore();
             log.info("Extracting sample data to {}", tempDirectory);
 
             File sd = copyToTempDir("sample-datasets.gpkg");
 
             final GeoPkgDataStoreFactory factory = new GeoPkgDataStoreFactory();
-            final Map<String, ?> params = Map.of(//
+            Map<String, Object> params = Map.of(//
                     GeoPkgDataStoreFactory.DBTYPE.key, "geopkg", //
                     GeoPkgDataStoreFactory.DATABASE.key, sd, //
                     // Whether to return only tables listed as features in gpkg_contents, or give
@@ -113,10 +131,18 @@ public class SampleDataBackendAutoConfiguration {
 
         @Override
         public void destroy() throws Exception {
-            dataStore.dispose();
-            if (tempDirectory != null && Files.isDirectory(tempDirectory)) {
-                log.info("Deleting sample data directory {}", tempDirectory);
-                FileSystemUtils.deleteRecursively(tempDirectory);
+            dispose();
+        }
+
+        private void dispose() throws IOException {
+            if (null != dataStore) {
+                dataStore.dispose();
+                if (tempDirectory != null && Files.isDirectory(tempDirectory)) {
+                    log.info("Deleting sample data directory {}", tempDirectory);
+                    FileSystemUtils.deleteRecursively(tempDirectory);
+                }
+                dataStore = null;
+                tempDirectory = null;
             }
         }
 

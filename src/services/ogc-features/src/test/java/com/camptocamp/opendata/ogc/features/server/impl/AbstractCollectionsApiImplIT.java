@@ -1,10 +1,12 @@
 package com.camptocamp.opendata.ogc.features.server.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +17,19 @@ import com.camptocamp.opendata.ogc.features.model.Collection;
 import com.camptocamp.opendata.ogc.features.model.Collections;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 
-public class AbstractCollectionsApiImplIT {
+public abstract class AbstractCollectionsApiImplIT {
 
     protected @Autowired CollectionsApiImpl collectionsApi;
 
     protected @Autowired NativeWebRequest req;
+
+    protected MockHttpServletRequest actualRequest;
+
+    @BeforeEach
+    void prepRequest() {
+        actualRequest = (MockHttpServletRequest) req.getNativeRequest();
+        actualRequest.addHeader("Accept", "application/json");
+    }
 
     @Test
     public void testGetCollections() {
@@ -38,20 +48,16 @@ public class AbstractCollectionsApiImplIT {
 
     @Test
     public void testGetItems() {
-        MockHttpServletRequest actualRequest = (MockHttpServletRequest) req.getNativeRequest();
-        actualRequest.addHeader("Accept", "application/json");
-        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures("locations", 10, null, null, null);
-
+        FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
+        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
         assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
     }
 
     @Test
     public void testGetItemsWithFilter() {
-        MockHttpServletRequest actualRequest = (MockHttpServletRequest) req.getNativeRequest();
-        actualRequest.addHeader("Accept", "application/json");
-        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures("locations", -1, null, null,
-                "number = 140");
+        FeaturesQuery query = FeaturesQuery.of("locations").withFilter("number = 140");
+        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
 
-        assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(1);
+        assertThat(response.getBody().getFeatures().count()).isEqualTo(1);
     }
 }

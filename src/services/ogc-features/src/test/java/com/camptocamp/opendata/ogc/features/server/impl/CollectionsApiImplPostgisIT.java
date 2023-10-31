@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -170,30 +169,26 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
 
     @Test
     public void testGetItems_survives_schema_change() throws SQLException {
-        MockHttpServletRequest actualRequest = (MockHttpServletRequest) req.getNativeRequest();
-        actualRequest.addHeader("Accept", "application/json");
 
-        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures("locations", 10, null, null, null);
+        FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
+        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
         assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
 
         renameColumn("locations", "year", "año");
 
-        response = collectionsApi.getFeatures("locations", 10, null, null, null);
+        response = collectionsApi.getFeatures(query);
         assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
 
         dropColumn("locations", "año");
 
-        response = collectionsApi.getFeatures("locations", 10, null, null, null);
+        response = collectionsApi.getFeatures(query);
         assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
     }
 
     @Test
     public void testGetItem_survives_schema_change() throws SQLException {
-        MockHttpServletRequest actualRequest = (MockHttpServletRequest) req.getNativeRequest();
-        actualRequest.addHeader("Accept", "application/json");
-
-        GeodataRecord before = collectionsApi.getFeatures("locations", 1, null, null, null).getBody().getFeatures()
-                .toList().get(0);
+        FeaturesQuery query = FeaturesQuery.of("locations").withLimit(1);
+        GeodataRecord before = collectionsApi.getFeatures(query).getBody().getFeatures().findFirst().orElseThrow();
         assertThat(before.getProperty("number")).isPresent();
 
         final String id = before.getId();

@@ -83,10 +83,17 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
             String datetime, //
             String filter) {
 
-        DataQuery dataQuery = toDataQuery(collectionId, limit, bbox, datetime, filter);
+        FeaturesQuery fq = FeaturesQuery.of(collectionId).withLimit(limit).withBbox(bbox).withDatetime(datetime)
+                .withFilter(filter);
+        return getFeatures(fq);
+    }
+
+    public ResponseEntity<FeatureCollection> getFeatures(@NonNull FeaturesQuery query) {
+
+        DataQuery dataQuery = toDataQuery(query);
 
         FeatureCollection fc = repository.query(dataQuery);
-        HttpHeaders headers = getFeaturesHeaders(collectionId);
+        HttpHeaders headers = getFeaturesHeaders(query.getCollectionId());
         fc = addLinks(fc, dataQuery);
         return ResponseEntity.status(200).headers(headers).body(fc);
     }
@@ -199,21 +206,9 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
         return link;
     }
 
-    DataQuery toDataQuery(String collectionId, //
-            Integer limit, //
-            List<BigDecimal> bbox, //
-            String datetime, //
-            String filter) {
-
-        // query collection id from whatever datasource is defined as index
-        DataQuery q = DataQuery.fromUri(URI.create("index://default")).withLayerName(collectionId);
-        if (null != limit && limit >= 0) {
-            // a negative limit can be used to return the whole dataset
-            q = q.withLimit(limit);
-        }
-        if (null != filter) {
-            q = q.withFilter(filter);
-        }
+    DataQuery toDataQuery(FeaturesQuery query) {
+        DataQuery q = DataQuery.fromUri(URI.create("index://default")).withLayerName(query.getCollectionId())
+                .withLimit(query.getLimit()).withOffset(query.getOffset()).withFilter(query.getFilter());
         return q;
     }
 }

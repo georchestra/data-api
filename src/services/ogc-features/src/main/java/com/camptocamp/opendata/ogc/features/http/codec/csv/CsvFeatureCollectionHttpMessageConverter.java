@@ -86,9 +86,9 @@ public class CsvFeatureCollectionHttpMessageConverter extends AbstractGenericHtt
         CSVWriter writer = new CSVWriter(new OutputStreamWriter(body), separator, quotechar, escapechar, lineSeparator);
 
         AtomicBoolean headerWritten = new AtomicBoolean();
-        message.getFeatures().forEach(rec -> {
-            encodeValue(rec, writer, headerWritten);
-        });
+        try (Stream<GeodataRecord> features = message.getFeatures()) {
+            features.forEach(rec -> encodeValue(rec, writer, headerWritten));
+        }
         writer.flush();
         body.flush();
     }

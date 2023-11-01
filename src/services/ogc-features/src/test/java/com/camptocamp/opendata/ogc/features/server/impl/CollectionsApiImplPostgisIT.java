@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -70,6 +71,16 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
     void beforeEeach() {
         reinitDataSource();
         pgDataStoreProvider.reInit();
+    }
+
+    @Override
+    protected Comparator<GeodataRecord> fidComparator() {
+        Comparator<GeodataRecord> fidComparator = (r1, r2) -> {
+            long l1 = Long.parseLong(r1.getId());
+            long l2 = Long.parseLong(r2.getId());
+            return Long.compare(l1, l2);
+        };
+        return fidComparator;
     }
 
     private static String copyInitScript(Path tmpdir) throws IOException {

@@ -2,6 +2,7 @@ package com.camptocamp.opendata.ogc.features.server.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.ogc.features.app.OgcFeaturesApp;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.camptocamp.opendata.ogc.features.model.Link;
@@ -16,6 +18,12 @@ import com.camptocamp.opendata.ogc.features.model.Link;
 @SpringBootTest(classes = OgcFeaturesApp.class)
 @ActiveProfiles("sample-data")
 public class CollectionsApiImplTest extends AbstractCollectionsApiImplIT {
+
+    @Override
+    protected Comparator<GeodataRecord> fidComparator() {
+        Comparator<GeodataRecord> fidComparator = (r1, r2) -> r1.getId().compareTo(r2.getId());
+        return fidComparator;
+    }
 
     @Test
     public void testGetItemsLinks() {

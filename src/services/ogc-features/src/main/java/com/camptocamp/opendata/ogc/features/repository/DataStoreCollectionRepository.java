@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.geotools.api.data.DataStore;
 import org.geotools.api.data.Query;
@@ -31,6 +32,7 @@ import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.ogc.features.model.Collection;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.camptocamp.opendata.ogc.features.model.GeoToolsFeatureCollection;
+import com.google.common.base.Throwables;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -88,7 +90,12 @@ public class DataStoreCollectionRepository implements CollectionRepository {
         try {
             return command.call();
         } catch (Exception e) {
-            log.info("Retrying command %s".formatted(description));
+            String message = Throwables.getRootCause(e).getMessage();
+            if (log.isDebugEnabled()) {
+                log.info("Retrying command %s: %s".formatted(description, message), e);
+            } else {
+                log.info("Retrying command %s: %s".formatted(description, message));
+            }
             dataStoreProvider.reInit();
             try {
                 return command.call();
@@ -109,7 +116,7 @@ public class DataStoreCollectionRepository implements CollectionRepository {
         return runWithRetry("query(%s)".formatted(query.getLayerName()), () -> {
             ensureSchemaIsInSync(gtQuery);
             SimpleFeatureCollection fc = query(gtQuery);
-            long matched = count(toQuery(query.withLimit(null)));
+            long matched = count(toQuery(query.withLimit(null).withOffset(null)));
             long returned = count(gtQuery);
             GeoToolsFeatureCollection ret = new GeoToolsFeatureCollection(collection, fc);
             ret.setNumberMatched(matched);
@@ -143,9 +150,12 @@ public class DataStoreCollectionRepository implements CollectionRepository {
 
     private Query toQuery(@NonNull DataQuery query) {
         Query q = new Query(query.getLayerName());
-        if (null != query.getLimit())
+        Integer limit = query.getLimit();
+        Integer offset = query.getOffset();
+
+        if (null != limit)
             q.setMaxFeatures(query.getLimit());
-        if (null != query.getOffset())
+        if (null != offset)
             q.setStartIndex(query.getOffset());
         if (null != query.getFilter()) {
             try {
@@ -155,21 +165,20 @@ public class DataStoreCollectionRepository implements CollectionRepository {
             }
         }
         List<SortBy> sortBy = sortBy(query);
-        if (sortBy.isEmpty()) {
-            // default to natural order for paging consistency
-            q.setSortBy(SortBy.NATURAL_ORDER);
-        } else {
-            q.setSortBy(sortBy.toArray(SortBy[]::new));
+        if (null != limit || null != offset) {
+            // always add natural order for paging consistency
+            sortBy.add(SortBy.NATURAL_ORDER);
         }
+        q.setSortBy(sortBy.toArray(SortBy[]::new));
         return q;
     }
 
-    public List<SortBy> sortBy(DataQuery q) {
-        return q.getSortBy().stream().map(this::toSortBy).toList();
+    private List<SortBy> sortBy(DataQuery q) {
+        return q.getSortBy().stream().map(this::toSortBy).collect(Collectors.toList());
     }
 
     private SortBy toSortBy(DataQuery.SortBy order) {
-        return ff.sort(order.propertyName(), order.ascending() ? SortOrder.DESCENDING : SortOrder.DESCENDING);
+        return ff.sort(order.propertyName(), order.ascending() ? SortOrder.ASCENDING : SortOrder.DESCENDING);
     }
 
     private SimpleFeatureCollection query(Query query) {

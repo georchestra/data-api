@@ -124,6 +124,9 @@ paths:
         - $ref: '#/components/parameters/bbox'
         - $ref: '#/components/parameters/datetime'
         - $ref: '#/components/parameters/filter'
+        - $ref: '#/components/parameters/filter-lang'
+        - $ref: '#/components/parameters/filter-crs'
+        - $ref: '#/components/parameters/sortby'
       responses:
         '200':
           $ref: '#/components/responses/Features'
@@ -266,10 +269,71 @@ components:
       name: filter
       in: query
       description: |-
-        An optional OGC filter.
+        Filter expression to be applied when retrieving resources. This is necessary to determine which resources should be included in a result set.
+        The predicate is to be parsed according to the `filter-lang` parameter value.
       required: false
       schema:
         type: string
+    filter-lang:
+      # https://docs.ogc.org/DRAFTS/19-079r1.html#filter-lang-param
+      name: filter-lang
+      in: query
+      required: false
+      description: |-
+        Identifies the filter encoding for the `filter` parameter value. The default value identifies the encoding the server will assume, if a `filter` is provided, but no `filter-lang`.
+        
+        The `ecql-text` language refers to the [GeoTools Extended Common Query Language](https://docs.geoserver.org/latest/en/user/filter/ecql_reference.html#filter-ecql-reference) syntax.
+        Make sure attribute names are double-quoted and string literals single-quoted. For example: `..&filter="statut de diffusion de l'établissement" = 'B'&filter-lang=ecql-text`
+        
+      schema:
+        type: string
+        enum:
+           - 'ecql-text'
+           #- 'cql2-text'
+           #- 'cql2-json'
+        default: 'ecql-text'
+      style: form
+    filter-crs:
+      # https://docs.ogc.org/DRAFTS/19-079r1.html#filter-crs-param
+      name: filter-crs
+      in: query
+      required: false
+      description: |-
+        For reasons discussed in the [W3C/OGC Spatial Data on the Web Best Practices document](https://docs.ogc.org/DRAFTS/19-079r1.html#SDWBP),
+        spatial coordinates by default are in the coordinate reference system WGS 84 longitude and latitude for 2D coordinates and WGS 84 longitude, 
+        latitude and ellipsoidal height in meters for 3D coordinates.
+        
+        For server that support geometries in other coordinate reference systems, the `filter-crs` parameter defined in this clause allows
+        clients to assert which CRS is being used to encode geometric values in a filter expression. 
+         
+        Otherwiese, the filter-crs parameter has no use.
+      schema:
+        type: string
+        format: uri-reference
+      style: form
+      explode: false
+    sortby:
+      # https://docs.ogc.org/DRAFTS/20-004.html#clause-sorting      
+      name: sortby
+      in: query
+      required: false
+      description: |-
+        Specifies how records in a response should be ordered for presentation, as defined in the [Requirements Class "Sorting" ](https://docs.ogc.org/DRAFTS/20-004.html#clause-sorting) draft specification.
+        
+        For example, `sortby=name` will sort by the `name` property in ascending order, the same as `sortby=+name`;
+        `sortby=-name,+rank` will sort by `name` in descending order and by `rank` in ascending order.
+      schema:
+        type: array
+        minItems: 1
+        items:
+          type: string
+          pattern: '[+|-]?[A-Za-z_].*'
+      explode: false
+      style: form
+      examples:
+        single:
+          value: test
+          summary: testtt
   schemas:
     collection:
       type: object

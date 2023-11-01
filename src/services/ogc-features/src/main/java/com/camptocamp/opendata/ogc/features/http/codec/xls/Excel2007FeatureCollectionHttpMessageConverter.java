@@ -16,6 +16,7 @@ import org.springframework.http.converter.AbstractGenericHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.util.MimeType;
 
+import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.model.SimpleProperty;
 import com.camptocamp.opendata.ogc.features.http.codec.MimeTypes;
 import com.camptocamp.opendata.ogc.features.http.codec.xls.StreamingWorkbookWriter.StreamingRow;
@@ -59,15 +60,17 @@ public class Excel2007FeatureCollectionHttpMessageConverter
         StreamingWorkbookWriter writer = new StreamingWorkbookWriter(outputMessage.getBody());
         try {
             addHeader(writer, message.getOriginalContents());
-            message.getFeatures().forEach(rec -> {
-                StreamingRow row = writer.newRow();
-                row.addColumnValue(rec.getId());
-                rec.getProperties().stream().map(SimpleProperty::getValue).forEach(row::addColumnValue);
-                if (null != rec.getGeometry()) {
-                    row.addColumnValue(rec.getGeometry().getValue());
-                }
-                row.end();
-            });
+            try (Stream<GeodataRecord> features = message.getFeatures()) {
+                features.forEach(rec -> {
+                    StreamingRow row = writer.newRow();
+                    row.addColumnValue(rec.getId());
+                    rec.getProperties().stream().map(SimpleProperty::getValue).forEach(row::addColumnValue);
+                    if (null != rec.getGeometry()) {
+                        row.addColumnValue(rec.getGeometry().getValue());
+                    }
+                    row.end();
+                });
+            }
         } finally {
             writer.finish();
         }

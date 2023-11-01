@@ -81,10 +81,26 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
             Integer limit, //
             List<BigDecimal> bbox, //
             String datetime, //
-            String filter) {
+            String filter, //
+            String filterLang, //
+            String filterCrs, //
+            List<String> sortby) {
 
-        FeaturesQuery fq = FeaturesQuery.of(collectionId).withLimit(limit).withBbox(bbox).withDatetime(datetime)
-                .withFilter(filter);
+        NativeWebRequest request = getRequest().orElseThrow();
+        Integer offset = extractOffset(request);
+
+        if (limit != null && limit.intValue() < 0) {
+            limit = null;
+        }
+        FeaturesQuery fq = FeaturesQuery.of(collectionId)//
+                .withLimit(limit)//
+                .withOffset(offset)//
+                .withBbox(bbox)//
+                .withDatetime(datetime)//
+                .withFilter(filter)//
+                .withFilterLang(filterLang)//
+                .withFilterCrs(filterCrs)//
+                .withSortby(sortby);
         return getFeatures(fq);
     }
 
@@ -207,8 +223,16 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
     }
 
     DataQuery toDataQuery(FeaturesQuery query) {
-        DataQuery q = DataQuery.fromUri(URI.create("index://default")).withLayerName(query.getCollectionId())
-                .withLimit(query.getLimit()).withOffset(query.getOffset()).withFilter(query.getFilter());
+
+        List<DataQuery.SortBy> sortby = query.sortBy();
+
+        DataQuery q = DataQuery.fromUri(URI.create("index://default"))//
+                .withLayerName(query.getCollectionId())//
+                .withLimit(query.getLimit())//
+                .withOffset(query.getOffset())//
+                .withFilter(query.getFilter())//
+                .withSortBy(sortby);
         return q;
     }
+
 }

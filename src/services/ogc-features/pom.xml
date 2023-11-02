@@ -198,7 +198,10 @@
             <configuration>
               <mainClass>com.camptocamp.opendata.ogc.features.app.OgcFeaturesApp</mainClass>
               <image>
-                <name>camptocamp/${project.name}</name>
+                <name>camptocamp/${project.name}:${project.version}</name>
+                <tags>
+                  <tag>camptocamp/${project.name}:latest</tag>
+                </tags>
                 <env>
                   <BPE_LANG>C.UTF-8</BPE_LANG>
                 </env>

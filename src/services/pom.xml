@@ -11,7 +11,7 @@
   <artifactId>services</artifactId>
   <packaging>pom</packaging>
   <modules>
-    <module>data-indexer</module>
+    <!--module>data-indexer</module-->
     <module>ogc-features</module>
   </modules>
 </project>

@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
@@ -40,6 +41,8 @@ import com.camptocamp.opendata.ogc.features.model.Collection;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+
+import lombok.Cleanup;
 
 @SpringBootTest(classes = OgcFeaturesApp.class)
 @ActiveProfiles("postgis")
@@ -183,25 +186,35 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
 
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
         ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
-        assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
+
+        @Cleanup
+        Stream<GeodataRecord> features = response.getBody().getFeatures();
+        assertThat(features.toList().size()).isEqualTo(10);
 
         renameColumn("locations", "year", "año");
 
         response = collectionsApi.getFeatures(query);
-        assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
+        @Cleanup
+        Stream<GeodataRecord> features1 = response.getBody().getFeatures();
+        assertThat(features1.toList().size()).isEqualTo(10);
 
         dropColumn("locations", "año");
 
         response = collectionsApi.getFeatures(query);
-        assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
+
+        @Cleanup
+        Stream<GeodataRecord> features2 = response.getBody().getFeatures();
+        assertThat(features2.toList().size()).isEqualTo(10);
     }
 
     @Test
     public void testGetItem_survives_schema_change() throws SQLException {
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(1);
-        GeodataRecord before = collectionsApi.getFeatures(query).getBody().getFeatures().findFirst().orElseThrow();
-        assertThat(before.getProperty("number")).isPresent();
 
+        @Cleanup
+        Stream<GeodataRecord> features = collectionsApi.getFeatures(query).getBody().getFeatures();
+        GeodataRecord before = features.findFirst().orElseThrow();
+        assertThat(before.getProperty("number")).isPresent();
         final String id = before.getId();
 
         renameColumn("locations", "number", "número");

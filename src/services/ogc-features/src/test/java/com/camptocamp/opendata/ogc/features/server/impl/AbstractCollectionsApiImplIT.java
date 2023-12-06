@@ -33,6 +33,8 @@ import com.camptocamp.opendata.ogc.features.model.Collections;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.google.common.base.Splitter;
 
+import lombok.Cleanup;
+
 public abstract class AbstractCollectionsApiImplIT {
 
     protected @Autowired CollectionsApiImpl collectionsApi;
@@ -66,7 +68,10 @@ public abstract class AbstractCollectionsApiImplIT {
     public void testGetItems() {
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
         ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
-        assertThat(response.getBody().getFeatures().toList().size()).isEqualTo(10);
+
+        @Cleanup
+        Stream<GeodataRecord> features = response.getBody().getFeatures();
+        assertThat(features.toList().size()).isEqualTo(10);
     }
 
     @Test
@@ -74,7 +79,10 @@ public abstract class AbstractCollectionsApiImplIT {
         FeaturesQuery query = FeaturesQuery.of("locations").withFilter("number = 140");
         ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
 
-        assertThat(response.getBody().getFeatures().count()).isEqualTo(1);
+        @Cleanup
+        Stream<GeodataRecord> features = response.getBody().getFeatures();
+        assertThat(features.count()).isEqualTo(1);
+
     }
 
     @ParameterizedTest
@@ -144,14 +152,15 @@ public abstract class AbstractCollectionsApiImplIT {
                 assertThat(collection.getNumberReturned()).as("numberReturned should be equal to page size")
                         .isEqualTo(page.getPageSize());
             }
-            try (Stream<GeodataRecord> features = collection.getFeatures()) {
-                features.forEach(rec -> {
-                    String id = rec.getId();
-                    assertThat(idsReturned).as("Duplicate feature returned on page " + pageNumber).doesNotContain(id);
-                    idsReturned.add(id);
-                    records.add(rec);
-                });
-            }
+
+            @Cleanup
+            Stream<GeodataRecord> features = collection.getFeatures();
+            features.forEach(rec -> {
+                String id = rec.getId();
+                assertThat(idsReturned).as("Duplicate feature returned on page " + pageNumber).doesNotContain(id);
+                idsReturned.add(id);
+                records.add(rec);
+            });
         }
         // verify expected order
 //		var sorted = new ArrayList<>(records);
@@ -171,8 +180,10 @@ public abstract class AbstractCollectionsApiImplIT {
 
         FeatureCollection body = response.getBody();
 
-        int expected = (int) body.getFeatures()
-                .filter(c -> "B".equals(c.getProperty(propetyName).orElseThrow().getValue())).count();
+        @Cleanup
+        Stream<GeodataRecord> features = body.getFeatures();
+        int expected = (int) features.filter(c -> "B".equals(c.getProperty(propetyName).orElseThrow().getValue()))
+                .count();
         assertThat(expected).isGreaterThan(0);
 
         final String cqlFilter = "\"%s\" = 'B'".formatted(propetyName);
@@ -181,13 +192,18 @@ public abstract class AbstractCollectionsApiImplIT {
 
         response = collectionsApi.getFeatures(FeaturesQuery.of(collectionName).withFilter(cqlFilter));
         body = response.getBody();
-        assertThat(body.getFeatures().count()).isEqualTo(expected);
+        @Cleanup
+        Stream<GeodataRecord> features1 = body.getFeatures();
+        assertThat(features1.count()).isEqualTo(expected);
 
         response = collectionsApi
                 .getFeatures(FeaturesQuery.of(collectionName).withFilter(cqlFilter).withLimit(expected));
 
         body = response.getBody();
-        assertThat(body.getFeatures().count()).isEqualTo(expected);
+
+        @Cleanup
+        Stream<GeodataRecord> features2 = body.getFeatures();
+        assertThat(features2.count()).isEqualTo(expected);
     }
 
     private void assertECQL_FilterCanBeParsed(final String propetyName, final String filter) {

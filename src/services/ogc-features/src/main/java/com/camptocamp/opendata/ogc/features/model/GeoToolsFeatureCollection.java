@@ -49,7 +49,9 @@ public class GeoToolsFeatureCollection implements FeatureCollection {
         int characteristics = Spliterator.DISTINCT | Spliterator.NONNULL;
         Spliterator<SimpleFeature> spliterator = Spliterators.spliteratorUnknownSize(iterator, characteristics);
         Stream<SimpleFeature> stream = StreamSupport.stream(spliterator, false);
-        stream = stream.onClose(it::close);
+        stream = stream.onClose(() -> {
+            it.close();
+        });
         return stream.map(featureMapper);
     }
 }

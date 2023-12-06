@@ -29,14 +29,14 @@ jobs:
         version: latest
 
     - name: Build with Maven
-      run: ./mvnw -B verify --file pom.xml
+      run: ./mvnw verify --file pom.xml -ntp
 
     - name: Build a docker image
-      run: ./mvnw clean package -Pdocker
+      run: ./mvnw clean package -Pdocker -ntp
 
     - name: "Resolve docker image tag"
       id: version
-      run: echo ::set-output name=VERSION::$(./mvnw -f src/services/ogc-features/ help:evaluate -q -DforceStdout -Dexpression=project.version)
+      run: echo ::set-output name=VERSION::$(./mvnw -f src/services/ogc-features/ help:evaluate -q -DforceStdout -Dexpression=project.version -ntp)
 
     - name: Login to DockerHub
       if: github.repository == 'camptocamp/mel-data-api' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || startsWith(github.event.ref, 'refs/tags/v'))

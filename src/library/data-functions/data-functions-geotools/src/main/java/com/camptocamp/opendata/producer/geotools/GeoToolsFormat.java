@@ -43,7 +43,7 @@ import com.google.common.collect.Iterators;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j(topic = "com.camptocamp.opendata.producer.geotools")
 abstract class GeoToolsFormat {
 
     public abstract String getName();

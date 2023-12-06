@@ -22,7 +22,7 @@ import com.google.common.base.Predicates;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j(topic = "com.camptocamp.opendata.producer.geotools")
 public class FeatureToRecord implements Function<SimpleFeature, GeodataRecord> {
 
     private Map<CoordinateReferenceSystem, String> crsToSrs = new IdentityHashMap<>();

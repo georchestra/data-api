@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j(topic = "com.camptocamp.opendata.jackson.geojson")
 public class GeoRecordToGeoJsonFeatureModule extends SimpleModule {
     private static final long serialVersionUID = 1L;
 

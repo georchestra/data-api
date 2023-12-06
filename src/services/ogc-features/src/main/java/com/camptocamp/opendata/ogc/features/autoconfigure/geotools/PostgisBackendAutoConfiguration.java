@@ -25,13 +25,16 @@ import com.camptocamp.opendata.ogc.features.repository.DefaultDataStoreProvider;
 import com.camptocamp.opendata.producer.geotools.FeatureToRecord;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 @AutoConfiguration
 @Profile("postgis")
+@Slf4j(topic = "com.camptocamp.opendata.ogc.features.autoconfigure.geotools")
 public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
 
     @Bean
     CollectionRepository postgisDataStoreCollectionRepository(DataStoreProvider dsProvider) {
+        log.info("Using GeoTools PostGIS CollectionRepository");
         return new DataStoreCollectionRepository(dsProvider, new FeatureToRecord());
     }
 

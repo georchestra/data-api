@@ -1,6 +1,8 @@
 spring:
   application:
     name: ogc-features
+  main:
+    banner-mode: off
   jackson.default-property-inclusion: non-empty
 
 springdoc:
@@ -17,7 +19,13 @@ springdoc:
 logging:
   level:
     root: info
-    com.zaxxer.hikari.pool.HikariPool: OFF
+    com.zaxxer.hikari.pool.HikariPool: warn
+    com.zaxxer.hikari.HikariDataSource: warn
+    org.geotools.jdbc: warn
+    com.camptocamp.opendata.ogc.features.autoconfigure: info
+    com.camptocamp.opendata.ogc.features.repository: info
+    com.camptocamp.opendata.producer.geotools: info
+    com.camptocamp.opendata.jackson.geojson: info
 
 ---
 spring:
@@ -30,6 +38,6 @@ spring:
     hikari:
       maximum-pool-size: ${postgres.pool.maxsize:20}
       minimum-idle: ${postgres.pool.minsize:0}
-      max-lifetime: 1000
+      max-lifetime: 30000 # 30000ms is the minimum allowed
       
 

@@ -25,8 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
-@Slf4j
 @SpringBootApplication
+@Slf4j(topic = "com.camptocamp.opendata.indexing.app")
 public class IndexingApp {
 
     private @Autowired Producers producers;

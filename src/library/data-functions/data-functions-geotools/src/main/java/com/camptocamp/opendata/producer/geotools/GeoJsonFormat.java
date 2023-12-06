@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j(topic = "com.camptocamp.opendata.producer.geotools")
 class GeoJsonFormat extends GeoToolsFormat {
 
     private static final GeoJSONDataStoreFactory FACTORY = new GeoJSONDataStoreFactory();

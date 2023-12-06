@@ -16,8 +16,8 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @ToString
+@Slf4j(topic = "com.camptocamp.opendata.producer.geotools")
 public class GeoToolsDataReader implements DatasetReader {
 
     private @Getter @Setter List<GeoToolsFormat> supportedFormats = new ArrayList<>();

@@ -78,7 +78,7 @@ import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
  * </code>
  * </pre>
  */
-@Slf4j
+@Slf4j(topic = "com.camptocamp.opendata.jackson.geojson")
 public class JtsGeoJsonModule extends SimpleModule {
     private static final long serialVersionUID = 1L;
 

@@ -1,7 +1,0 @@
-debug: false
-logging:
-  level:
-    root: INFO
-    com.zaxxer.hikari.pool.HikariPool: OFF
-    com.zaxxer.hikari.HikariDataSource: OFF
-    # org.geotools: DEBUG

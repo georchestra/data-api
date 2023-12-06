@@ -44,11 +44,12 @@ import lombok.extern.slf4j.Slf4j;
  */
 @AutoConfiguration
 @Profile("sample-data")
-@Slf4j
+@Slf4j(topic = "com.camptocamp.opendata.ogc.features.autoconfigure.geotools")
 public class SampleDataBackendAutoConfiguration {
 
     @Bean
     CollectionRepository sampleDataDataStoreCollectionRepository(SampleData dsProvider) {
+        log.info("Using geotools sample data CollectionRepository");
         return new DataStoreCollectionRepository(dsProvider, new FeatureToRecord());
     }
 

@@ -8,7 +8,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
-@Slf4j
+@Slf4j(topic = "com.camptocamp.opendata.indexing.sink")
 public class Consumers {
 
     public void index(@NonNull Flux<GeodataRecord> records) {

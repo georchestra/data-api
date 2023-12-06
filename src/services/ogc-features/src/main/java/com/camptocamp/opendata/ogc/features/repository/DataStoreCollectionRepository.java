@@ -23,7 +23,6 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.referencing.CRS;
@@ -40,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
-@Slf4j
+@Slf4j(topic = "com.camptocamp.opendata.ogc.features.repository")
 public class DataStoreCollectionRepository implements CollectionRepository {
 
     private final @NonNull DataStoreProvider dataStoreProvider;

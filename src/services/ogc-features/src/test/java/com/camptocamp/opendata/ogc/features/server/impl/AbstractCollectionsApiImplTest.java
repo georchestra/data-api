@@ -35,7 +35,7 @@ import com.google.common.base.Splitter;
 
 import lombok.Cleanup;
 
-public abstract class AbstractCollectionsApiImplIT {
+public abstract class AbstractCollectionsApiImplTest {
 
     protected @Autowired CollectionsApiImpl collectionsApi;
 

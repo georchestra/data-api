@@ -17,7 +17,7 @@ import com.camptocamp.opendata.ogc.features.model.Link;
 
 @SpringBootTest(classes = OgcFeaturesApp.class)
 @ActiveProfiles("sample-data")
-class CollectionsApiImplTest extends AbstractCollectionsApiImplIT {
+class CollectionsApiImplTest extends AbstractCollectionsApiImplTest {
 
     @Override
     protected Comparator<GeodataRecord> fidComparator() {

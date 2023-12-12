@@ -17,6 +17,7 @@ import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.PostgisBacken
 import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.SampleDataBackendAutoConfiguration;
 import com.camptocamp.opendata.ogc.features.http.codec.MimeTypes;
 import com.camptocamp.opendata.ogc.features.http.codec.csv.CsvFeatureCollectionHttpMessageConverter;
+import com.camptocamp.opendata.ogc.features.http.codec.json.SimpleJsonFeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.http.codec.shp.ShapefileFeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.http.codec.xls.Excel2007FeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
@@ -68,9 +69,15 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
      */
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        converters.add(simpleJsonFeatureCollectionHttpMessageConverter());
         converters.add(csvFeatureCollectionHttpMessageConverter());
         converters.add(shapefileFeatureCollectionHttpMessageConverter());
         converters.add(excel2007FeatureCollectionHttpMessageConverter());
+    }
+
+    @Bean
+    SimpleJsonFeatureCollectionHttpMessageConverter simpleJsonFeatureCollectionHttpMessageConverter() {
+        return new SimpleJsonFeatureCollectionHttpMessageConverter();
     }
 
     @Bean

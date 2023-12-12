@@ -48,7 +48,7 @@ import lombok.Cleanup;
 @ActiveProfiles("postgis")
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
+class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
 
     public static JdbcDatabaseContainer<?> postgis;
 
@@ -87,7 +87,7 @@ class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
     }
 
     private static String copyInitScript(Path tmpdir) throws IOException {
-        URL resource = CollectionsApiImplPostgisIT.class.getResource("/test-data/postgis/opendataindex.sql");
+        URL resource = CollectionsApiImplPostgisTest.class.getResource("/test-data/postgis/opendataindex.sql");
         assertThat(resource).isNotNull();
 
         Path target = tmpdir.resolve("pg-sample-data.sql");

@@ -549,6 +549,66 @@ components:
           $ref: "#/components/schemas/numberMatched"
         numberReturned:
           $ref: "#/components/schemas/numberReturned"
+      example:
+                {
+                    "type":"FeatureCollection",
+                    "numberMatched":16,
+                    "numberReturned":2,
+                    "features":[
+                        {
+                            "type":"Feature",
+                            "@typeName":"locations",
+                            "@id":"1",
+                            "geometry":{"type":"Point","@name":"geom","@srs":"EPSG:4326","coordinates":[11.116667,46.066667]},
+                            "properties":{"city":" Trento","number":140,"year":2002}
+                        },
+                        {
+                            "type":"Feature",
+                            "@typeName":"locations",
+                            "@id":"10",
+                            "geometry":{"type":"Point","@name":"geom","@srs":"EPSG:4326","coordinates":[2.183333,41.383333]},
+                            "properties":{"city":" Barcelona","number":914,"year":2010}
+                        }
+                     ],
+                     "links":[
+                         {
+                             "href":"http://localhost:<port>/ogcapi/collections/locations/items?f=geojson&offset=0&limit=2",
+                             "rel":"self",
+                             "type":"application/geo+json",
+                             "title":"This document"
+                         },
+                         {
+                             "href":"http://localhost:<port>/ogcapi/collections/locations/items?f=geojson&offset=2&limit=2",
+                             "rel":"next",
+                             "type":"application/geo+json",
+                             "title":"Next page"
+                         },
+                         {
+                             "href":"http://localhost:<port>/ogcapi/collections/locations/items?offset=0&limit=2&f=json",
+                             "rel":"alternate",
+                             "type":"application/json",
+                             "title":"This document as JSON"
+                         },
+                         {
+                             "href":"http://localhost:<port>/ogcapi/collections/locations/items?offset=0&limit=2&f=shapefile",
+                             "rel":"alternate",
+                             "type":"application/x-shapefile",
+                             "title":"This document as Esri Shapefile"
+                         },
+                         {
+                             "href":"http://localhost:<port>/ogcapi/collections/locations/items?offset=0&limit=2&f=csv",
+                             "rel":"alternate",
+                             "type":"text/csv;charset=UTF-8",
+                             "title":"This document as Comma Separated Values"
+                         },
+                         {
+                             "href":"http://localhost:<port>/ogcapi/collections/locations/items?offset=0&limit=2&f=ooxml",
+                             "rel":"alternate",
+                             "type":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                             "title":"This document as Excel 2007 / OOXML"
+                         }
+                     ]
+                }
     featureGeoJSON:
       type: object
       required:
@@ -968,48 +1028,12 @@ components:
         returned features (`numberMatched` and `numberReturned`) as well as
         links to support paging (link relation `next`).
       content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/featureCollectionGeoJSON'
         application/geo+json:
           schema:
             $ref: '#/components/schemas/featureCollectionGeoJSON'
-          example:
-            type: FeatureCollection
-            links:
-              - href: 'http://data.example.com/collections/buildings/items.json'
-                rel: self
-                type: application/geo+json
-                title: this document
-              - href: 'http://data.example.com/collections/buildings/items.html'
-                rel: alternate
-                type: text/html
-                title: this document as HTML
-              - href: 'http://data.example.com/collections/buildings/items.json&offset=10&limit=2'
-                rel: next
-                type: application/geo+json
-                title: next page
-            timeStamp: '2018-04-03T14:52:23Z'
-            numberMatched: 123
-            numberReturned: 2
-            features:
-              - type: Feature
-                id: '123'
-                geometry:
-                  type: Polygon
-                  coordinates:
-                    - ...
-                properties:
-                  function: residential
-                  floors: '2'
-                  lastUpdate: '2015-08-01T12:34:56Z'
-              - type: Feature
-                id: '132'
-                geometry:
-                  type: Polygon
-                  coordinates:
-                    - ...
-                properties:
-                  function: public use
-                  floors: '10'
-                  lastUpdate: '2013-12-03T10:15:37Z'
         'text/csv':
           schema:
             type: string

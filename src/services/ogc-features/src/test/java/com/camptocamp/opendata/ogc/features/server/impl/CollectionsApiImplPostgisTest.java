@@ -48,7 +48,7 @@ import lombok.Cleanup;
 @ActiveProfiles("postgis")
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
+class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
 
     public static JdbcDatabaseContainer<?> postgis;
 
@@ -87,7 +87,7 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
     }
 
     private static String copyInitScript(Path tmpdir) throws IOException {
-        URL resource = CollectionsApiImplPostgisIT.class.getResource("/test-data/postgis/opendataindex.sql");
+        URL resource = CollectionsApiImplPostgisTest.class.getResource("/test-data/postgis/opendataindex.sql");
         assertThat(resource).isNotNull();
 
         Path target = tmpdir.resolve("pg-sample-data.sql");
@@ -108,20 +108,18 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
     }
 
     @Test
-    public void testGetCollections_sees_new_table(TestInfo testInfo) throws SQLException {
+    void testGetCollections_sees_new_table(TestInfo testInfo) throws SQLException {
         final String table = testInfo.getDisplayName();
 
         Set<String> collections = getCollectionNames();
 
-        assertThat(collections).doesNotContain(table);
-        assertThat(collections).containsAll(defaultTables);
+        assertThat(collections).doesNotContain(table).containsAll(defaultTables);
 
         createTestTable(table);
 
         collections = getCollectionNames();
 
-        assertThat(collections).contains(table);
-        assertThat(collections).containsAll(defaultTables);
+        assertThat(collections).contains(table).containsAll(defaultTables);
     }
 
     private Set<String> getCollectionNames() {
@@ -130,7 +128,7 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
     }
 
     @Test
-    public void testGetCollections_survives_schema_change() throws SQLException {
+    void testGetCollections_survives_schema_change() throws SQLException {
         final String table = "locations";
 
         Set<String> collections = getCollectionNames();
@@ -148,7 +146,7 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
     }
 
     @Test
-    public void testGetCollections_survives_table_rename(TestInfo testInfo) throws SQLException {
+    void testGetCollections_survives_table_rename(TestInfo testInfo) throws SQLException {
         final String table = testInfo.getDisplayName();
         final String newName = table + "_renamed";
         createTestTable(table);
@@ -159,44 +157,41 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
         renameTable(table, newName);
 
         collections = getCollectionNames();
-        assertThat(collections).doesNotContain(table);
-        assertThat(collections).contains(newName);
+        assertThat(collections).doesNotContain(table).contains(newName);
     }
 
     @Test
-    public void testGetCollections_survives_drop_table(TestInfo testInfo) throws SQLException {
+    void testGetCollections_survives_drop_table(TestInfo testInfo) throws SQLException {
         final String table = testInfo.getDisplayName();
         createTestTable(table);
         pgDataStoreProvider.reInit();
 
         var collections = getCollectionNames();
 
-        assertThat(collections).contains(table);
-        assertThat(collections).containsAll(defaultTables);
+        assertThat(collections).contains(table).containsAll(defaultTables);
 
         dropTable(table);
 
         collections = getCollectionNames();
-        assertThat(collections).doesNotContain(table);
-        assertThat(collections).containsAll(defaultTables);
+        assertThat(collections).doesNotContain(table).containsAll(defaultTables);
     }
 
     @Test
-    public void testGetItems_survives_schema_change() throws SQLException {
+    void testGetItems_survives_schema_change() throws SQLException {
 
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
         ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
 
         @Cleanup
         Stream<GeodataRecord> features = response.getBody().getFeatures();
-        assertThat(features.toList().size()).isEqualTo(10);
+        assertThat(features).hasSize(10);
 
         renameColumn("locations", "year", "año");
 
         response = collectionsApi.getFeatures(query);
         @Cleanup
         Stream<GeodataRecord> features1 = response.getBody().getFeatures();
-        assertThat(features1.toList().size()).isEqualTo(10);
+        assertThat(features1).hasSize(10);
 
         dropColumn("locations", "año");
 
@@ -204,11 +199,11 @@ public class CollectionsApiImplPostgisIT extends AbstractCollectionsApiImplIT {
 
         @Cleanup
         Stream<GeodataRecord> features2 = response.getBody().getFeatures();
-        assertThat(features2.toList().size()).isEqualTo(10);
+        assertThat(features2).hasSize(10);
     }
 
     @Test
-    public void testGetItem_survives_schema_change() throws SQLException {
+    void testGetItem_survives_schema_change() throws SQLException {
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(1);
 
         @Cleanup

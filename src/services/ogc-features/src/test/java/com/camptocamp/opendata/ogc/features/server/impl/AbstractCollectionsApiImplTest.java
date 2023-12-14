@@ -35,7 +35,7 @@ import com.google.common.base.Splitter;
 
 import lombok.Cleanup;
 
-public abstract class AbstractCollectionsApiImplIT {
+public abstract class AbstractCollectionsApiImplTest {
 
     protected @Autowired CollectionsApiImpl collectionsApi;
 
@@ -50,7 +50,7 @@ public abstract class AbstractCollectionsApiImplIT {
     }
 
     @Test
-    public void testGetCollections() {
+    protected void testGetCollections() {
 
         var expected = Set.of("base-sirene-v3", "comptages-velo", "locations", "ouvrages-acquis-par-les-mediatheques");
 
@@ -58,24 +58,24 @@ public abstract class AbstractCollectionsApiImplIT {
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
         Collections body = response.getBody();
-        assertThat(body.getCollections().size()).isEqualTo(expected.size());
+        assertThat(body.getCollections()).hasSameSizeAs(expected);
 
         var actual = body.getCollections().stream().map(Collection::getTitle).collect(Collectors.toSet());
         assertThat(actual).isEqualTo(expected);
     }
 
     @Test
-    public void testGetItems() {
+    protected void testGetItems() {
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
         ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
 
         @Cleanup
         Stream<GeodataRecord> features = response.getBody().getFeatures();
-        assertThat(features.toList().size()).isEqualTo(10);
+        assertThat(features).hasSize(10);
     }
 
     @Test
-    public void testGetItemsWithFilter() {
+    protected void testGetItemsWithFilter() {
         FeaturesQuery query = FeaturesQuery.of("locations").withFilter("number = 140");
         ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
 
@@ -87,7 +87,7 @@ public abstract class AbstractCollectionsApiImplIT {
 
     @ParameterizedTest
     @ValueSource(strings = { "base-sirene-v3", "comptages-velo", "locations", "ouvrages-acquis-par-les-mediatheques" })
-    public void testGetItems_paging_natural_order(String layerName) {
+    protected void testGetItems_paging_natural_order(String layerName) {
         FeaturesQuery query = FeaturesQuery.of(layerName);
 
         Comparator<GeodataRecord> fidComparator = fidComparator();
@@ -102,7 +102,7 @@ public abstract class AbstractCollectionsApiImplIT {
             "comptages-velo:commune,date et heure", //
             "locations:-city", //
             "ouvrages-acquis-par-les-mediatheques:-type de document,editeur" })
-    public void testGetItems_paging_mixed_order(String layerAndSortSpec) {
+    protected void testGetItems_paging_mixed_order(String layerAndSortSpec) {
         String layerName = layerAndSortSpec.substring(0, layerAndSortSpec.indexOf(':'));
         String sortSpec = layerAndSortSpec.substring(1 + layerAndSortSpec.indexOf(':'));
 
@@ -162,14 +162,11 @@ public abstract class AbstractCollectionsApiImplIT {
                 records.add(rec);
             });
         }
-        // verify expected order
-//		var sorted = new ArrayList<>(records);
-//		java.util.Collections.sort(sorted, comparator);
 //		assertThat(records).isEqualTo(sorted);
     }
 
     @Test
-    public void testGetItemsWithFilter_property_name_with_spaces() throws Exception {
+    protected void testGetItemsWithFilter_property_name_with_spaces() throws Exception {
         final String collectionName = "base-sirene-v3";
         final String propetyName = "indice de répétition de l'établissement";
 
@@ -184,7 +181,7 @@ public abstract class AbstractCollectionsApiImplIT {
         Stream<GeodataRecord> features = body.getFeatures();
         int expected = (int) features.filter(c -> "B".equals(c.getProperty(propetyName).orElseThrow().getValue()))
                 .count();
-        assertThat(expected).isGreaterThan(0);
+        assertThat(expected).isPositive();
 
         final String cqlFilter = "\"%s\" = 'B'".formatted(propetyName);
 

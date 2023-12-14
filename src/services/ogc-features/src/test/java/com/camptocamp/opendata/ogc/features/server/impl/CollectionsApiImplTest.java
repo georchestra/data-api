@@ -17,7 +17,7 @@ import com.camptocamp.opendata.ogc.features.model.Link;
 
 @SpringBootTest(classes = OgcFeaturesApp.class)
 @ActiveProfiles("sample-data")
-public class CollectionsApiImplTest extends AbstractCollectionsApiImplIT {
+class CollectionsApiImplTest extends AbstractCollectionsApiImplTest {
 
     @Override
     protected Comparator<GeodataRecord> fidComparator() {
@@ -26,7 +26,7 @@ public class CollectionsApiImplTest extends AbstractCollectionsApiImplIT {
     }
 
     @Test
-    public void testGetItemsLinks() {
+    void testGetItemsLinks() {
         actualRequest.setParameter("f", "geojson");
         actualRequest.removeHeader("Accept");
         actualRequest.addHeader("Accept", "application/geo+json");
@@ -39,7 +39,8 @@ public class CollectionsApiImplTest extends AbstractCollectionsApiImplIT {
         assertThat(nextLink.getHref()).contains("f=geojson");
     }
 
-    public @Test void testGetItemsLinksNoFParam() {
+    @Test
+    void testGetItemsLinksNoFParam() {
         actualRequest.removeParameter("f");
         actualRequest.removeHeader("Accept");
         actualRequest.addHeader("Accept", "application/json");
@@ -52,7 +53,8 @@ public class CollectionsApiImplTest extends AbstractCollectionsApiImplIT {
         assertThat(nextLink.getHref()).contains("f=json");
     }
 
-    public @Test void testGetItemsLinksFParamAndDifferentHeaderParams() {
+    @Test
+    void testGetItemsLinksFParamAndDifferentHeaderParams() {
         actualRequest.addHeader("Accept", "application/json");
         actualRequest.setParameter("f", "ooxml");
 

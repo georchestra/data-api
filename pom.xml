@@ -14,7 +14,7 @@
   </modules>
 
   <properties>
-    <revision>1.1.0</revision>
+    <revision>1.2-SNAPSHOT</revision>
     <spring-cloud.version>2023.0.0</spring-cloud.version>
     <spring-boot.version>3.2.1</spring-boot.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -39,6 +39,5 @@ spring:
       maximum-pool-size: ${postgres.pool.maxsize:20}
       minimum-idle: ${postgres.pool.minsize:0}
       max-lifetime: 30000 # 30000ms is the minimum allowed
-pg.schema: ${postgres.schema:opendataindex}
       
 

@@ -133,7 +133,7 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
         HttpServletRequest nativeRequest = (HttpServletRequest) request.getNativeRequest();
         String basePath = nativeRequest.getRequestURL().toString();
         collections.getCollections().forEach(c -> {
-            String colBase = UriComponentsBuilder.fromPath(basePath).pathSegment(c.getId()).build().toString();
+            String colBase = UriComponentsBuilder.fromUriString(basePath).pathSegment(c.getId()).build().toString();
             addLinks(c, colBase);
         });
         return collections;
@@ -146,7 +146,7 @@ public class CollectionsApiImpl implements CollectionsApiDelegate {
     }
 
     private Collection addLinks(Collection collection, String baseUrl) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromPath(baseUrl);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl);
         builder.pathSegment("items");
 
         MimeTypes defFormat = MimeTypes.GeoJSON;

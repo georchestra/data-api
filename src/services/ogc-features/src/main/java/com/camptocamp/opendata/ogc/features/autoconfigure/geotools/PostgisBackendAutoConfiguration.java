@@ -40,19 +40,21 @@ public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
 
     @Bean(name = "indexDataStore")
     @DependsOn("databaseStartupValidator")
-    DataStoreProvider postgisDataStore(DataSource dataSource, @Value("${postgres.schema:}") String schema)
+    DataStoreProvider postgisDataStore(DataSource dataSource, @Value("${postgres.schema}") String schema)
             throws IOException {
-        log.info("Schema used : " + schema);
-        Map<String, Object> params = Map.of(//
-                PostgisNGDataStoreFactory.DBTYPE.key, "postgis", //
+        Map<String, Object> params = new HashMap<String, Object>(Map.of(//
+                PostgisNGDataStoreFactory.DBTYPE.key, "post gis", //
                 PostgisNGDataStoreFactory.DATASOURCE.key, dataSource, //
-                PostgisNGDataStoreFactory.SCHEMA.key, schema, //
                 PostgisNGDataStoreFactory.PREPARED_STATEMENTS.key, true, //
                 PostgisNGDataStoreFactory.ENCODE_FUNCTIONS.key, true, //
                 PostgisNGDataStoreFactory.ESTIMATED_EXTENTS.key, true, //
                 PostgisNGDataStoreFactory.LOOSEBBOX.key, true//
-        );
+        ));
 
+        if (schema != null) {
+            log.info("Schema used : " + schema);
+            params.put(PostgisNGDataStoreFactory.SCHEMA.key, schema);
+        }
         return new PostgisDataStoreProvider(params);
     }
 

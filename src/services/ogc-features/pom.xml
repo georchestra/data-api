@@ -7,7 +7,6 @@
     <version>${revision}</version>
   </parent>
   <artifactId>opendata-ogc-features</artifactId>
-
   <dependencies>
     <dependency>
       <groupId>com.camptocamp.opendata</groupId>

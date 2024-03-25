@@ -1,10 +1,10 @@
 package com.camptocamp.opendata.ogc.features.server.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import com.camptocamp.opendata.ogc.features.model.*;
+import com.camptocamp.opendata.ogc.features.model.Collection;
+import com.camptocamp.opendata.ogc.features.model.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -12,9 +12,6 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.camptocamp.opendata.ogc.features.http.codec.MimeTypes;
-import com.camptocamp.opendata.ogc.features.model.Collection;
-import com.camptocamp.opendata.ogc.features.model.Collections;
-import com.camptocamp.opendata.ogc.features.model.Link;
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
 import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApiDelegate;
 
@@ -34,10 +31,24 @@ public class CapabilitiesApiImpl implements CapabilitiesApiDelegate {
         return Optional.of(req);
     }
 
-    // TODO: implement
-//    @Override
-//    public ResponseEntity<LandingPage> getLandingPage() {
-//    }
+    @Override
+    public ResponseEntity<LandingPage> getLandingPage() {
+        String basePath = ((HttpServletRequest) req.getNativeRequest()).getRequestURL().toString();
+        List<Link> links = List.of(
+                // String href, String rel, String type, String title
+                link(basePath, "self", "application/json", "This document as JSON"),
+                link(basePath + "conformance", "conformance", "application/json", "Conformance"),
+                link(basePath + "collections", "data", "application/json", "Collections"),
+                link(basePath + "../v3/api-docs", "service-desc", "application/vnd.oai.openapi+json;version=3.0",
+                        "OpenAPI definition in JSON format"),
+                link(basePath + "../swagger-ui/index.html", "service-doc", "text/html",
+                        "OpenAPI definition in HTML format"));
+        LandingPage ret = new LandingPage(links);
+        ret.setTitle("geOrchestra Data API");
+        ret.setDescription("data-api provides an API to access datas");
+        return ResponseEntity.ok(ret);
+
+    }
 
     /**
      * {@inheritDoc}
@@ -56,6 +67,27 @@ public class CapabilitiesApiImpl implements CapabilitiesApiDelegate {
     public ResponseEntity<Collection> describeCollection(String collectionId) {
         return repository.findCollection(collectionId).map(this::addLinks).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Override
+    public ResponseEntity<ConfClasses> getConformanceDeclaration() {
+        ConfClasses conformance = new ConfClasses(List.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/req/oas30",
+                "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json",
+                "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
+                "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30",
+                "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/landing-page",
+                "http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs",
+                "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections",
+                "http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/schemas",
+                "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables",
+                "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
+                "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters",
+                "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
+                "http://www.opengis.net/spec/ogcapi-features-5/1.0/req/core-roles-features",
+                "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html"));
+
+        return ResponseEntity.ok(conformance);
+
     }
 
     private Collections createCollections(List<Collection> collections) {

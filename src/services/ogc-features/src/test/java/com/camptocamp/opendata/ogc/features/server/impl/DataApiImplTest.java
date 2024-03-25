@@ -17,7 +17,7 @@ import com.camptocamp.opendata.ogc.features.model.Link;
 
 @SpringBootTest(classes = OgcFeaturesApp.class)
 @ActiveProfiles("sample-data")
-class CollectionsApiImplTest extends AbstractCollectionsApiImplTest {
+class DataApiImplTest extends AbstractCollectionsApiImplTest {
 
     @Override
     protected Comparator<GeodataRecord> fidComparator() {
@@ -32,7 +32,7 @@ class CollectionsApiImplTest extends AbstractCollectionsApiImplTest {
         actualRequest.addHeader("Accept", "application/geo+json");
 
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
-        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
+        ResponseEntity<FeatureCollection> response = dataApi.getFeatures(query);
 
         List<Link> links = response.getBody().getLinks();
         Link nextLink = links.stream().filter(l -> "next".equals(l.getRel())).findFirst().orElseThrow();
@@ -46,7 +46,7 @@ class CollectionsApiImplTest extends AbstractCollectionsApiImplTest {
         actualRequest.addHeader("Accept", "application/json");
 
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
-        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
+        ResponseEntity<FeatureCollection> response = dataApi.getFeatures(query);
 
         List<Link> links = response.getBody().getLinks();
         Link nextLink = links.stream().filter(l -> "next".equals(l.getRel())).findFirst().orElseThrow();
@@ -58,8 +58,7 @@ class CollectionsApiImplTest extends AbstractCollectionsApiImplTest {
         actualRequest.addHeader("Accept", "application/json");
         actualRequest.setParameter("f", "ooxml");
 
-        ResponseEntity<FeatureCollection> response = collectionsApi
-                .getFeatures(FeaturesQuery.of("locations").withLimit(2));
+        ResponseEntity<FeatureCollection> response = dataApi.getFeatures(FeaturesQuery.of("locations").withLimit(2));
         List<Link> links = response.getBody().getLinks();
         Link nextLink = links.stream().filter(l -> "next".equals(l.getRel())).findFirst().orElseThrow();
         assertThat(nextLink.getHref()).contains("f=ooxml");

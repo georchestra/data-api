@@ -12,8 +12,10 @@ import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.SampleDataBac
 import com.camptocamp.opendata.ogc.features.http.codec.csv.CsvFeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.http.codec.shp.ShapefileFeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.http.codec.xls.Excel2007FeatureCollectionHttpMessageConverter;
-import com.camptocamp.opendata.ogc.features.server.api.CollectionsApiController;
-import com.camptocamp.opendata.ogc.features.server.api.CollectionsApiDelegate;
+import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApiController;
+import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApiDelegate;
+import com.camptocamp.opendata.ogc.features.server.api.DataApiController;
+import com.camptocamp.opendata.ogc.features.server.api.DataApiDelegate;
 import com.camptocamp.opendata.ogc.features.server.config.HomeController;
 
 class ApiAutoConfigurationTest {
@@ -27,7 +29,8 @@ class ApiAutoConfigurationTest {
     void testExpectedBeans() {
         runner.run(context -> {
             assertThat(context).hasNotFailed().hasSingleBean(HomeController.class)
-                    .hasSingleBean(CollectionsApiController.class).hasSingleBean(CollectionsApiDelegate.class)
+                    .hasSingleBean(CapabilitiesApiController.class).hasSingleBean(CapabilitiesApiDelegate.class)
+                    .hasSingleBean(DataApiController.class).hasSingleBean(DataApiDelegate.class)
                     .hasSingleBean(Excel2007FeatureCollectionHttpMessageConverter.class)
                     .hasSingleBean(ShapefileFeatureCollectionHttpMessageConverter.class)
                     .hasSingleBean(CsvFeatureCollectionHttpMessageConverter.class);

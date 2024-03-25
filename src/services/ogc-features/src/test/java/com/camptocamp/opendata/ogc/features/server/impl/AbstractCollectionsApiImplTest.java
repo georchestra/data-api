@@ -37,7 +37,8 @@ import lombok.Cleanup;
 
 public abstract class AbstractCollectionsApiImplTest {
 
-    protected @Autowired CollectionsApiImpl collectionsApi;
+    protected @Autowired CapabilitiesApiImpl capabilitiesApi;
+    protected @Autowired DataApiImpl dataApi;
 
     protected @Autowired NativeWebRequest req;
 
@@ -54,7 +55,7 @@ public abstract class AbstractCollectionsApiImplTest {
 
         var expected = Set.of("base-sirene-v3", "comptages-velo", "locations", "ouvrages-acquis-par-les-mediatheques");
 
-        ResponseEntity<Collections> response = collectionsApi.getCollections();
+        ResponseEntity<Collections> response = capabilitiesApi.getCollections();
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
         Collections body = response.getBody();
@@ -67,7 +68,7 @@ public abstract class AbstractCollectionsApiImplTest {
     @Test
     protected void testGetItems() {
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
-        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
+        ResponseEntity<FeatureCollection> response = dataApi.getFeatures(query);
 
         @Cleanup
         Stream<GeodataRecord> features = response.getBody().getFeatures();
@@ -77,7 +78,7 @@ public abstract class AbstractCollectionsApiImplTest {
     @Test
     protected void testGetItemsWithFilter() {
         FeaturesQuery query = FeaturesQuery.of("locations").withFilter("number = 140");
-        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
+        ResponseEntity<FeatureCollection> response = dataApi.getFeatures(query);
 
         @Cleanup
         Stream<GeodataRecord> features = response.getBody().getFeatures();
@@ -124,8 +125,8 @@ public abstract class AbstractCollectionsApiImplTest {
 
     private void testPagingConsistency(FeaturesQuery query, Comparator<GeodataRecord> comparator) {
 
-        final int total = collectionsApi.getFeatures(FeaturesQuery.of(query.getCollectionId())).getBody()
-                .getNumberMatched().intValue();
+        final int total = dataApi.getFeatures(FeaturesQuery.of(query.getCollectionId())).getBody().getNumberMatched()
+                .intValue();
         final int pageSize = total / 11;
         final int lastPageSize = Math.min(pageSize, total % pageSize);
         final int pages = total / pageSize + (lastPageSize > 0 ? 1 : 0);
@@ -140,7 +141,7 @@ public abstract class AbstractCollectionsApiImplTest {
         for (int p = 0; p < pages; p++, page = page.next()) {
             int offset = (int) page.getOffset();
             query = query.withOffset(offset);
-            FeatureCollection collection = collectionsApi.getFeatures(query).getBody();
+            FeatureCollection collection = dataApi.getFeatures(query).getBody();
             assertThat(collection.getNumberMatched())
                     .as("numberMatched should be the number of features matching the query filter").isEqualTo(total);
 
@@ -173,7 +174,7 @@ public abstract class AbstractCollectionsApiImplTest {
         MockHttpServletRequest actualRequest = (MockHttpServletRequest) req.getNativeRequest();
         actualRequest.addHeader("Accept", "application/json");
 
-        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(FeaturesQuery.of(collectionName));
+        ResponseEntity<FeatureCollection> response = dataApi.getFeatures(FeaturesQuery.of(collectionName));
 
         FeatureCollection body = response.getBody();
 
@@ -187,14 +188,13 @@ public abstract class AbstractCollectionsApiImplTest {
 
         assertECQL_FilterCanBeParsed(propetyName, cqlFilter);
 
-        response = collectionsApi.getFeatures(FeaturesQuery.of(collectionName).withFilter(cqlFilter));
+        response = dataApi.getFeatures(FeaturesQuery.of(collectionName).withFilter(cqlFilter));
         body = response.getBody();
         @Cleanup
         Stream<GeodataRecord> features1 = body.getFeatures();
         assertThat(features1.count()).isEqualTo(expected);
 
-        response = collectionsApi
-                .getFeatures(FeaturesQuery.of(collectionName).withFilter(cqlFilter).withLimit(expected));
+        response = dataApi.getFeatures(FeaturesQuery.of(collectionName).withFilter(cqlFilter).withLimit(expected));
 
         body = response.getBody();
 

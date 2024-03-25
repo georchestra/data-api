@@ -153,6 +153,7 @@
                 <sourceFolder>src/main/java</sourceFolder>
                 <library>spring-boot</library>
                 <reactive>false</reactive>
+                <useTags>true</useTags>
                 <useSpringBoot3>true</useSpringBoot3>
                 <delegatePattern>true</delegatePattern>
                 <openApiNullable>false</openApiNullable>

@@ -21,11 +21,16 @@ import com.camptocamp.opendata.ogc.features.http.codec.json.SimpleJsonFeatureCol
 import com.camptocamp.opendata.ogc.features.http.codec.shp.ShapefileFeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.http.codec.xls.Excel2007FeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
-import com.camptocamp.opendata.ogc.features.server.api.CollectionsApiController;
-import com.camptocamp.opendata.ogc.features.server.api.CollectionsApiDelegate;
+import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApi;
+import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApiController;
+import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApiDelegate;
+import com.camptocamp.opendata.ogc.features.server.api.DataApi;
+import com.camptocamp.opendata.ogc.features.server.api.DataApiController;
+import com.camptocamp.opendata.ogc.features.server.api.DataApiDelegate;
 import com.camptocamp.opendata.ogc.features.server.config.HomeController;
 import com.camptocamp.opendata.ogc.features.server.config.SpringDocConfiguration;
-import com.camptocamp.opendata.ogc.features.server.impl.CollectionsApiImpl;
+import com.camptocamp.opendata.ogc.features.server.impl.CapabilitiesApiImpl;
+import com.camptocamp.opendata.ogc.features.server.impl.DataApiImpl;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -56,8 +61,23 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    CollectionsApiController collectionsApiController(CollectionsApiDelegate delegate) {
-        return new CollectionsApiController(delegate);
+    CapabilitiesApiController capabilitiesApi(CapabilitiesApiDelegate delegate) {
+        return new CapabilitiesApiController(delegate);
+    }
+
+    @Bean
+    DataApiController collectionsApiController(DataApiDelegate delegate) {
+        return new DataApiController(delegate);
+    }
+
+    @Bean
+    CapabilitiesApiDelegate capabilitiesApiDelegate(CollectionRepository repo) {
+        return new CapabilitiesApiImpl(repo);
+    }
+
+    @Bean
+    DataApiDelegate collectionsApiDelegate(CollectionRepository repo) {
+        return new DataApiImpl(repo);
     }
 
     /**
@@ -93,11 +113,6 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
     @Bean
     CsvFeatureCollectionHttpMessageConverter csvFeatureCollectionHttpMessageConverter() {
         return new CsvFeatureCollectionHttpMessageConverter();
-    }
-
-    @Bean
-    CollectionsApiDelegate collectionsApiDelegate(CollectionRepository repo) {
-        return new CollectionsApiImpl(repo);
     }
 
     /**

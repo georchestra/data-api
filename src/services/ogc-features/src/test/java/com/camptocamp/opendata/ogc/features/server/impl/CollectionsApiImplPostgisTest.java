@@ -123,7 +123,7 @@ class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
     }
 
     private Set<String> getCollectionNames() {
-        return collectionsApi.getCollections().getBody().getCollections().stream().map(Collection::getTitle)
+        return capabilitiesApi.getCollections().getBody().getCollections().stream().map(Collection::getTitle)
                 .collect(Collectors.toSet());
     }
 
@@ -180,7 +180,7 @@ class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
     void testGetItems_survives_schema_change() throws SQLException {
 
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
-        ResponseEntity<FeatureCollection> response = collectionsApi.getFeatures(query);
+        ResponseEntity<FeatureCollection> response = dataApi.getFeatures(query);
 
         @Cleanup
         Stream<GeodataRecord> features = response.getBody().getFeatures();
@@ -188,14 +188,14 @@ class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
 
         renameColumn("locations", "year", "año");
 
-        response = collectionsApi.getFeatures(query);
+        response = dataApi.getFeatures(query);
         @Cleanup
         Stream<GeodataRecord> features1 = response.getBody().getFeatures();
         assertThat(features1).hasSize(10);
 
         dropColumn("locations", "año");
 
-        response = collectionsApi.getFeatures(query);
+        response = dataApi.getFeatures(query);
 
         @Cleanup
         Stream<GeodataRecord> features2 = response.getBody().getFeatures();
@@ -207,20 +207,20 @@ class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(1);
 
         @Cleanup
-        Stream<GeodataRecord> features = collectionsApi.getFeatures(query).getBody().getFeatures();
+        Stream<GeodataRecord> features = dataApi.getFeatures(query).getBody().getFeatures();
         GeodataRecord before = features.findFirst().orElseThrow();
         assertThat(before.getProperty("number")).isPresent();
         final String id = before.getId();
 
         renameColumn("locations", "number", "número");
 
-        GeodataRecord after = collectionsApi.getFeature("locations", id).getBody();
+        GeodataRecord after = dataApi.getFeature("locations", id).getBody();
         assertThat(after.getProperty("number")).isEmpty();
         assertThat(after.getProperty("número")).isPresent();
 
         dropColumn("locations", "número");
 
-        after = collectionsApi.getFeature("locations", id).getBody();
+        after = dataApi.getFeature("locations", id).getBody();
         assertThat(after.getProperty("número")).isEmpty();
     }
 

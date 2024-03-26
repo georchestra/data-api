@@ -33,4 +33,17 @@ class MimeTypesTest {
         assertThat(find("application/x-shapefile")).isPresent().get().isEqualTo(SHAPEFILE);
     }
 
+    /**
+     * Tests lookup of multivalued mimetypes.
+     *
+     * Some implementations can send an `Accept` http header as multivalued
+     * comma-separated string.
+     *
+     * In this case, the code will take the first parsed value.
+     */
+    @Test
+    void testFindMultivaluedMimeType() {
+        assertThat(find("application/json, application.geo+json")).isPresent().get().isEqualTo(JSON);
+    }
+
 }

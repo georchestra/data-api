@@ -56,7 +56,11 @@ public enum MimeTypes {
     }
 
     public static Optional<MimeTypes> find(@NonNull String mimeType) {
-        MimeType contentType = MimeType.valueOf(mimeType);
+        String mt = mimeType;
+        if (mimeType.contains(",")) {
+            mt = Arrays.stream(mimeType.split(",")).findFirst().get();
+        }
+        MimeType contentType = MimeType.valueOf(mt);
         return find(contentType);
     }
 

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
+import com.camptocamp.opendata.ogc.features.server.api.*;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -21,12 +22,6 @@ import com.camptocamp.opendata.ogc.features.http.codec.json.SimpleJsonFeatureCol
 import com.camptocamp.opendata.ogc.features.http.codec.shp.ShapefileFeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.http.codec.xls.Excel2007FeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
-import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApi;
-import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApiController;
-import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApiDelegate;
-import com.camptocamp.opendata.ogc.features.server.api.DataApi;
-import com.camptocamp.opendata.ogc.features.server.api.DataApiController;
-import com.camptocamp.opendata.ogc.features.server.api.DataApiDelegate;
 import com.camptocamp.opendata.ogc.features.server.config.HomeController;
 import com.camptocamp.opendata.ogc.features.server.config.SpringDocConfiguration;
 import com.camptocamp.opendata.ogc.features.server.impl.CapabilitiesApiImpl;
@@ -66,7 +61,7 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    DataApiController collectionsApiController(DataApiDelegate delegate) {
+    DataApiController dataApiController(DataApiDelegate delegate) {
         return new DataApiController(delegate);
     }
 
@@ -76,7 +71,7 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    DataApiDelegate collectionsApiDelegate(CollectionRepository repo) {
+    DataApiDelegate dataApiDelegate(CollectionRepository repo) {
         return new DataApiImpl(repo);
     }
 

@@ -63,7 +63,7 @@ public class DataApiImpl implements DataApiDelegate {
             String filter, //
             String filterLang, //
             String filterCrs, //
-            List<String> sortby) {
+            List<String> sortby, String crs) {
 
         NativeWebRequest request = getRequest().orElseThrow();
         Integer offset = extractOffset(request);
@@ -79,7 +79,7 @@ public class DataApiImpl implements DataApiDelegate {
                 .withFilter(filter)//
                 .withFilterLang(filterLang)//
                 .withFilterCrs(filterCrs)//
-                .withSortby(sortby);
+                .withSortby(sortby).withCrs(crs);
         return getFeatures(fq);
     }
 
@@ -165,7 +165,8 @@ public class DataApiImpl implements DataApiDelegate {
                 .withLimit(query.getLimit())//
                 .withOffset(query.getOffset())//
                 .withFilter(query.getFilter())//
-                .withSortBy(sortby);
+                .withSortBy(sortby)
+                .withTargetCrs(query.getCrs());
     }
 
 }

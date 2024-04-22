@@ -22,6 +22,7 @@ public class DataQuery {
     private Integer limit;
     private String filter;
     private @NonNull List<SortBy> sortBy;
+    private String targetCrs;
 
     public static DataQuery fromUri(URI dataUri) {
         DataSource dataSource = DataSource.fromUri(dataUri);

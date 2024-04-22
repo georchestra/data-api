@@ -127,6 +127,7 @@ paths:
         - $ref: '#/components/parameters/filter-lang'
         - $ref: '#/components/parameters/filter-crs'
         - $ref: '#/components/parameters/sortby'
+        - $ref: '#/components/parameters/crs'
       responses:
         '200':
           $ref: '#/components/responses/Features'
@@ -284,7 +285,7 @@ components:
         
         The `ecql-text` language refers to the [GeoTools Extended Common Query Language](https://docs.geoserver.org/latest/en/user/filter/ecql_reference.html#filter-ecql-reference) syntax.
         Make sure attribute names are double-quoted and string literals single-quoted. For example: `..&filter="statut de diffusion de l'établissement" = 'B'&filter-lang=ecql-text`
-        
+
       schema:
         type: string
         enum:
@@ -313,7 +314,7 @@ components:
       style: form
       explode: false
     sortby:
-      # https://docs.ogc.org/DRAFTS/20-004.html#clause-sorting      
+      # https://docs.ogc.org/DRAFTS/20-004.html#clause-sorting
       name: sortby
       in: query
       required: false
@@ -334,6 +335,15 @@ components:
         single:
           value: test
           summary: testtt
+    crs:
+        name: crs
+        in: query
+        description: |-
+            The coordinate reference system of the coordinates in the spatial extent (property `bbox`). The default reference system is WGS 84 longitude/latitude.
+            In the Core this is the only supported coordinate reference system. Extensions may support additional coordinate reference systems and add additional enum values.
+        required: false
+        schema:
+            type: string
   schemas:
     collection:
       type: object

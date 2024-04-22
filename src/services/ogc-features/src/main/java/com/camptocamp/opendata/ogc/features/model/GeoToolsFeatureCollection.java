@@ -10,6 +10,8 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.camptocamp.opendata.processor.geotools.GeoToolsProcessors;
+import io.micrometer.common.util.StringUtils;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -32,9 +34,11 @@ public class GeoToolsFeatureCollection implements FeatureCollection {
 
     private final @NonNull @Getter Collection collection;
     private final @NonNull SimpleFeatureCollection features;
+    private final @NonNull GeoToolsProcessors gtProcessors = new GeoToolsProcessors();
 
     private @Setter @Getter Long numberMatched;
     private @Setter @Getter Long numberReturned;
+    private @Setter @Getter String targetCrs;
     private final @Getter List<Link> links = new ArrayList<>();
 
     @JsonIgnore
@@ -49,9 +53,10 @@ public class GeoToolsFeatureCollection implements FeatureCollection {
         int characteristics = Spliterator.DISTINCT | Spliterator.NONNULL;
         Spliterator<SimpleFeature> spliterator = Spliterators.spliteratorUnknownSize(iterator, characteristics);
         Stream<SimpleFeature> stream = StreamSupport.stream(spliterator, false);
-        stream = stream.onClose(() -> {
-            it.close();
-        });
+        stream = stream.onClose(it::close);
+        if (!StringUtils.isEmpty(targetCrs)){
+            return gtProcessors.reproject(String.format("EPSG:%s", targetCrs)).apply(stream.map(featureMapper));
+        }
         return stream.map(featureMapper);
     }
 }

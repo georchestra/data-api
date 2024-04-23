@@ -2,14 +2,22 @@ package com.camptocamp.opendata.ogc.features.autoconfigure.geotools;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.sql.DataSource;
 
 import org.geotools.api.data.DataStore;
+import org.geotools.data.postgis.PostGISDialect;
+import org.geotools.data.postgis.PostGISPSDialect;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
+import org.geotools.jdbc.SQLDialect;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -73,6 +81,7 @@ public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
 
         public DataSource getDataSource() {
             return (DataSource) super.connectionParams.get(PostgisNGDataStoreFactory.DATASOURCE.key);
+
         }
 
         public void setDataSource(DataSource ds) {
@@ -84,12 +93,47 @@ public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
 
         @Override
         protected @NonNull DataStore create() {
-            PostgisNGDataStoreFactory fac = new PostgisNGDataStoreFactory();
+            PostgisNGDataStoreFactory fac = new PostgisNGDataStoreFactory() {
+                @Override
+                protected SQLDialect createSQLDialect(JDBCDataStore dataStore) {
+                    return new SchemaUnawarePostGISDialect(dataStore);
+                }
+
+                @Override
+                protected SQLDialect createSQLDialect(JDBCDataStore dataStore, Map<String, ?> params) {
+                    return new SchemaUnawarePostGISDialect(dataStore);
+                }
+            };
             try {
                 return fac.createDataStore(connectionParams);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
+        }
+    }
+
+    private static class SchemaUnawarePostGISDialect extends PostGISDialect {
+        public SchemaUnawarePostGISDialect(JDBCDataStore dataStore) {
+            super(dataStore);
+        }
+
+        @Override
+        public Integer getGeometrySRID(String schemaName, String tableName, String columnName, Connection cx)
+                throws SQLException {
+            Integer srid = null;
+            try (Statement statement = cx.createStatement()) {
+
+                String sqlStatement = "SELECT ST_SRID(\"" + columnName + "\")::int FROM \"" + tableName + "\" LIMIT 1";
+                try (ResultSet result = statement.executeQuery(sqlStatement)) {
+                    if (result.next()) {
+                        srid = result.getInt(1);
+                    }
+                } catch (SQLException e) {
+                    LOGGER.log(Level.WARNING, "Failed to retrieve information about " + tableName + "." + columnName
+                            + " from the geometry_columns table, checking the first geometry instead", e);
+                }
+            }
+            return srid;
         }
     }
 }

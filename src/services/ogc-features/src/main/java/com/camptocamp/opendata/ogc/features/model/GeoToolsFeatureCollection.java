@@ -16,7 +16,6 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.jdbc.JDBCDataStore;
 
 import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.producer.geotools.FeatureToRecord;
@@ -38,7 +37,7 @@ public class GeoToolsFeatureCollection implements FeatureCollection {
 
     private @Setter @Getter Long numberMatched;
     private @Setter @Getter Long numberReturned;
-    private @Setter @Getter String targetCrs;
+    private @JsonIgnore @Setter @Getter String targetCrs;
     private final @Getter List<Link> links = new ArrayList<>();
 
     @JsonIgnore

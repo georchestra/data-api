@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -63,6 +64,7 @@ public class SimpleJsonFeatureCollectionHttpMessageConverter
     public SimpleJsonFeatureCollectionHttpMessageConverter() {
         super(MEDIA_TYPE);
         mapper = new ObjectMapper();
+        mapper.setDateFormat(new StdDateFormat());
         Jackson2ObjectMapperBuilder.json().configure(mapper);
         mapper.registerModule(new SimpleJsonModule());
     }

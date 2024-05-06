@@ -165,8 +165,7 @@ public class DataApiImpl implements DataApiDelegate {
                 .withLimit(query.getLimit())//
                 .withOffset(query.getOffset())//
                 .withFilter(query.getFilter())//
-                .withSortBy(sortby)
-                .withTargetCrs(query.getCrs());
+                .withSortBy(sortby).withTargetCrs(query.getCrs());
     }
 
 }

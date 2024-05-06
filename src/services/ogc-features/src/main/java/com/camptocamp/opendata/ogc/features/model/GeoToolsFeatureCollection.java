@@ -53,9 +53,10 @@ public class GeoToolsFeatureCollection implements FeatureCollection {
         Spliterator<SimpleFeature> spliterator = Spliterators.spliteratorUnknownSize(iterator, characteristics);
         Stream<SimpleFeature> stream = StreamSupport.stream(spliterator, false);
         stream = stream.onClose(it::close);
-        if (!StringUtils.isEmpty(targetCrs)){
+        if (!StringUtils.isEmpty(targetCrs)) {
             return gtProcessors.reproject(String.format("EPSG:%s", targetCrs)).apply(stream.map(featureMapper));
+        } else {
+            return gtProcessors.reproject("EPSG:4326").apply(stream.map(featureMapper));
         }
-        return stream.map(featureMapper);
     }
 }

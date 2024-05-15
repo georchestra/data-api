@@ -48,8 +48,8 @@ jobs:
     - name: push the docker image
       if: github.repository == 'georchestra/data-api' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || startsWith(github.event.ref, 'refs/tags/v'))
       run: |
-        docker push camptocamp/opendata-ogc-features:${{ steps.version.outputs.VERSION }}
-        docker push camptocamp/opendata-ogc-features:latest
+        docker push georchestra/data-api:${{ steps.version.outputs.VERSION }}
+        docker push georchestra/data-api:latest
 
     - name: "Remove SNAPSHOT jars from repository"
       run: |

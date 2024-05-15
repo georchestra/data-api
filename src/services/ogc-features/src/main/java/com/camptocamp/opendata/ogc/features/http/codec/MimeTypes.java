@@ -12,15 +12,15 @@ import lombok.NonNull;
 
 public enum MimeTypes {
 
-    JSON(new MimeType("application", "json"), "json", "JSON") {
+    JSON(new MimeType("application", "json"), "json", "JSON", true) {
         public @Override void addHeaders(String collectionId, HttpHeaders headers) {
         }
     },
-    GeoJSON(new MimeType("application", "geo+json"), "geojson", "GeoJSON") {
+    GeoJSON(new MimeType("application", "geo+json"), "geojson", "GeoJSON", true) {
         public @Override void addHeaders(String collectionId, HttpHeaders headers) {
         }
     },
-    SHAPEFILE(new MimeType("application", "x-shapefile"), "shapefile", "Esri Shapefile") {
+    SHAPEFILE(new MimeType("application", "x-shapefile"), "shapefile", "Esri Shapefile", false) {
         public @Override void addHeaders(String collectionId, HttpHeaders headers) {
             contentDisposition(collectionId, "shp.zip", headers);
         }
@@ -29,13 +29,13 @@ public enum MimeTypes {
             return "feature".equals(itemType);
         }
     },
-    CSV(new MimeType("text", "csv", StandardCharsets.UTF_8), "csv", "Comma Separated Values") {
+    CSV(new MimeType("text", "csv", StandardCharsets.UTF_8), "csv", "Comma Separated Values", true) {
         public @Override void addHeaders(String collectionId, HttpHeaders headers) {
             contentDisposition(collectionId, "csv", headers);
         }
     },
     OOXML(new MimeType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"), "ooxml",
-            "Excel 2007 / OOXML") {
+            "Excel 2007 / OOXML", false) {
         public @Override void addHeaders(String collectionId, HttpHeaders headers) {
             contentDisposition(collectionId, "xlsx", headers);
         }
@@ -44,11 +44,13 @@ public enum MimeTypes {
     private final @Getter @NonNull MimeType mimeType;
     private final @Getter @NonNull String shortName;
     private final @Getter @NonNull String displayName;
+    private final @Getter @NonNull boolean paginable;
 
-    private MimeTypes(MimeType type, String shortName, String displayName) {
+    private MimeTypes(MimeType type, String shortName, String displayName, boolean paginable) {
         this.mimeType = type;
         this.shortName = shortName;
         this.displayName = displayName;
+        this.paginable = paginable;
     }
 
     public static Optional<MimeTypes> find(@NonNull MimeType contentType) {

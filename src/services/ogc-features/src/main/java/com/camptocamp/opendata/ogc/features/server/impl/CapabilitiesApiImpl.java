@@ -1,6 +1,7 @@
 package com.camptocamp.opendata.ogc.features.server.impl;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.camptocamp.opendata.ogc.features.model.*;
 import com.camptocamp.opendata.ogc.features.model.Collection;
@@ -117,10 +118,11 @@ public class CapabilitiesApiImpl implements CapabilitiesApiDelegate {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl);
         builder.pathSegment("items");
 
-        MimeTypes defFormat = MimeTypes.GeoJSON;
-        UriComponents itemsc = builder.replaceQueryParam("f", defFormat.getShortName()).build();
-        Link items = link(itemsc.toString(), "items", defFormat.getMimeType().toString(), collection.getId());
-        collection.addLinksItem(items);
+        Arrays.stream(MimeTypes.values()).filter(MimeTypes::isPaginable).forEach(m -> {
+            if (m.supportsItemType(collection.getItemType())) {
+                collection.addLinksItem(createItem(builder, m, collection.getId()));
+            }
+        });
 
         Arrays.stream(MimeTypes.values()).forEach(m -> {
             if (m.supportsItemType(collection.getItemType())) {
@@ -133,6 +135,11 @@ public class CapabilitiesApiImpl implements CapabilitiesApiDelegate {
             }
         });
         return collection;
+    }
+
+    private Link createItem(UriComponentsBuilder builder, MimeTypes defFormat, String collectionId) {
+        UriComponents itemsc = builder.replaceQueryParam("f", defFormat.getShortName()).build();
+        return link(itemsc.toString(), "items", defFormat.getMimeType().toString(), collectionId);
     }
 
     private Link link(String href, String rel, String type, String title) {

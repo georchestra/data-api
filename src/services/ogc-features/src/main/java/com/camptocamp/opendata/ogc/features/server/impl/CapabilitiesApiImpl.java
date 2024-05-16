@@ -118,7 +118,7 @@ public class CapabilitiesApiImpl implements CapabilitiesApiDelegate {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl);
         builder.pathSegment("items");
 
-        Arrays.stream(MimeTypes.values()).filter(MimeTypes::isPaginable).forEach(m -> {
+        Arrays.stream(MimeTypes.values()).forEach(m -> {
             if (m.supportsItemType(collection.getItemType())) {
                 collection.addLinksItem(createItem(builder, m, collection.getId()));
             }

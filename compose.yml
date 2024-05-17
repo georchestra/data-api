@@ -44,7 +44,7 @@ services:
     command: /import-sample-data.sh
     
   ogc-features:
-    image: camptocamp/opendata-ogc-features:latest
+    image: georchestra/data-api:latest
     depends_on:
       - postgis
     environment:

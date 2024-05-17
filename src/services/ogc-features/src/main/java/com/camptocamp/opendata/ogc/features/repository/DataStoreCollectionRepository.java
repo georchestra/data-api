@@ -121,6 +121,7 @@ public class DataStoreCollectionRepository implements CollectionRepository {
             GeoToolsFeatureCollection ret = new GeoToolsFeatureCollection(collection, fc);
             ret.setNumberMatched(matched);
             ret.setNumberReturned(returned);
+            ret.setTargetCrs(query.getTargetCrs());
             return ret;
         });
     }

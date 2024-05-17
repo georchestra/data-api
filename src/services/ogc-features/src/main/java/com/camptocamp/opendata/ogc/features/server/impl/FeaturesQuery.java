@@ -31,9 +31,10 @@ public class FeaturesQuery {
     private String filterLang;
     private String filterCrs;
     private List<String> sortby;
+    private String crs;
 
     public static FeaturesQuery of(String collectionId) {
-        return new FeaturesQuery(collectionId, null, null, null, null, null, null, null, null);
+        return new FeaturesQuery(collectionId, null, null, null, null, null, null, null, null, null);
     }
 
     public FeaturesQuery withBbox(double minx, double miny, double maxx, double maxy) {

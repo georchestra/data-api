@@ -26,7 +26,7 @@ services:
 
   # Run with `docker compose run --rm import-sample-data` to import or re-import the sample datasets
   import-sample-data:
-    image: osgeo/gdal:latest
+    image: osgeo/gdal:alpine-small-3.6.3
     depends_on:
       - postgis
     environment:

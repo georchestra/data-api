@@ -3,6 +3,7 @@ package com.camptocamp.opendata.ogc.features.http.codec.json;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.model.GeometryProperty;
@@ -65,7 +66,9 @@ class SimpleJsonModule extends SimpleModule {
 
             generator.writeFieldName("records");
             generator.writeStartArray();
-            collection.getFeatures().forEach(rec -> write(rec, generator));
+            try (Stream<GeodataRecord> stream = collection.getFeatures()){
+                stream.forEach(rec -> write(rec, generator));
+            }
             generator.writeEndArray();
 
             generator.writeFieldName("links");

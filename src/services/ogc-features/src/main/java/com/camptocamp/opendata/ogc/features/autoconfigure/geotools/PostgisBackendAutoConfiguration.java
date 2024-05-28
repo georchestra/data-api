@@ -144,5 +144,70 @@ public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
             }
             return srid;
         }
+
+        /**
+         * Override default implementation to get the geometry from the expected schema.table
+         * Suppose that Postgis version > 1.5
+         * Suppose there's only one table with the given name in all schemas
+         *
+         * @param schemaName The database schema, could be <code>null</code>.
+         * @param tableName The table, never <code>null</code>.
+         * @param columnName The column name, never <code>null</code>
+         * @param cx The database connection.
+         * @return The dimension of the geometry column, or 2 if not found.
+         * @throws SQLException
+         */
+        @Override
+        public int getGeometryDimension(String schemaName, String tableName, String columnName, Connection cx)
+                throws SQLException {
+            // first attempt, try with the geometry metadata
+            Integer dimension = null;
+            try (Statement statement = cx.createStatement()) {
+                if (schemaName == null) {
+                    String sqlStatement = "select table_schema from information_schema.tables WHERE table_name LIKE '"
+                            + tableName + "' LIMIT 1;";
+                    LOGGER.log(Level.FINE, "Check table in information schema; {0} ", sqlStatement);
+                    try (ResultSet result = statement.executeQuery(sqlStatement)) {
+
+                        if (result.next()) {
+                            schemaName = result.getString(1);
+                        }
+                    } catch (SQLException e) {
+                        schemaName = "public";
+                    }
+                }
+
+                // try geography_columns
+                // first look for an entry in geography_columns
+                String sqlStatement = "SELECT COORD_DIMENSION FROM GEOGRAPHY_COLUMNS WHERE " //
+                        + "F_TABLE_SCHEMA = '" + schemaName + "' " //
+                        + "AND F_TABLE_NAME = '" + tableName + "' " //
+                        + "AND F_GEOGRAPHY_COLUMN = '" + columnName + "'";
+                LOGGER.log(Level.FINE, "Geography srid check; {0} ", sqlStatement);
+                try (ResultSet result = statement.executeQuery(sqlStatement)) {
+
+                    if (result.next()) {
+                        return result.getInt(1);
+                    }
+                } catch (SQLException e) {
+                    LOGGER.log(Level.WARNING, "Failed to retrieve information about " + schemaName + "." + tableName
+                            + "." + columnName + " from the geography_columns table, checking geometry_columns instead",
+                            e);
+                }
+            }
+
+            // fall back on inspection of the first geometry, assuming uniform srid (fair
+            // assumption
+            // an unpredictable srid makes the table un-queriable)
+            if (dimension == null) {
+                dimension = getDimensionFromFirstGeo(schemaName, tableName, columnName, cx);
+            }
+
+            if (dimension == null) {
+                dimension = 2;
+            }
+
+            return dimension;
+        }
     }
 }

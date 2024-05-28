@@ -16,7 +16,7 @@ springdoc:
   swagger-ui:
     enabled: true
     #path: ${openapi.geoServerACL.base-path}/swagger-ui.html
-    try-it-out-enabled: true    
+    try-it-out-enabled: true
 
 logging:
   level:
@@ -34,12 +34,14 @@ spring:
   config.activate.on-profile: postgis
   datasource:
     url: jdbc:postgresql://${postgres.host:localhost}:${postgres.port:5432}/${postgres.db:postgis}
-    username: ${postgres.user:postgis} 
+    username: ${postgres.user:postgis}
     password: ${postgres.password:postgis}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: ${postgres.pool.maxsize:20}
-      minimum-idle: ${postgres.pool.minsize:0}
-      max-lifetime: 30000 # 30000ms is the minimum allowed
-      
+      maximum-pool-size: ${postgres.pool.maxsize:10}
+      minimum-idle: ${postgres.pool.minsize:2}
+      max-lifetime: ${postgres.pool.maxlifetime:120000}
+      idle-timeout: ${postgres.pool.idletimeout:30000}
+      connection-timeout: ${postgres.pool.connectiontimeout:60000}
+      leak-detection-threshold: ${postgres.pool.leakdetectionthreshold:0}
 

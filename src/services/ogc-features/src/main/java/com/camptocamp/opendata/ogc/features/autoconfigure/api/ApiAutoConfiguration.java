@@ -12,6 +12,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.PostgisBackendAutoConfiguration;
@@ -42,7 +43,7 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
  * <ul>
  * <li>{@link CollectionRepository}
  * </ul>
- * 
+ *
  * @see PostgisBackendAutoConfiguration
  * @see SampleDataBackendAutoConfiguration
  */
@@ -77,7 +78,7 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see CsvFeatureCollectionHttpMessageConverter
      * @see ShapefileFeatureCollectionHttpMessageConverter
      * @see Excel2007FeatureCollectionHttpMessageConverter
@@ -179,5 +180,10 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
             }
             chain.doFilter(request, response);
         }
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**").allowedMethods("*");
     }
 }

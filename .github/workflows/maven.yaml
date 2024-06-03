@@ -51,6 +51,16 @@ jobs:
         docker push georchestra/data-api:${{ steps.version.outputs.VERSION }}
         docker push georchestra/data-api:latest
 
+    - name: "Update Docker Hub Description"
+      if: github.ref == 'refs/heads/main' && github.repository == 'georchestra/data-api' && github.actor != 'dependabot[bot]' && github.event_name != 'pull_request'
+      uses: peter-evans/dockerhub-description@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        repository: georchestra/data-api
+        readme-filepath: ./DOCKER_HUB.md
+        short-description: 'OGC API Features implementation module for the geOrchestra SDI'
+
     - name: "Remove SNAPSHOT jars from repository"
       run: |
         find .m2/repository -name "*SNAPSHOT*" -type d | xargs rm -rf {}

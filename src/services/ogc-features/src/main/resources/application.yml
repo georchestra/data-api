@@ -28,6 +28,7 @@ logging:
     com.camptocamp.opendata.ogc.features.repository: info
     com.camptocamp.opendata.producer.geotools: info
     com.camptocamp.opendata.jackson.geojson: info
+    org.geotools.data.shapefile.dbf: error
 
 ---
 spring:

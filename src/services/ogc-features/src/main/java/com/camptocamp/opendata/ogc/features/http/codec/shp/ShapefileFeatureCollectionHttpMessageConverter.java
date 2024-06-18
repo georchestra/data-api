@@ -13,10 +13,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FilenameUtils;
-import org.geotools.api.data.FeatureWriter;
 import org.geotools.api.data.Transaction;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.type.AttributeDescriptor;
+import org.geotools.api.feature.type.GeometryDescriptor;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -75,14 +76,14 @@ public class ShapefileFeatureCollectionHttpMessageConverter
         Path tmpDir = createTmpDir();
         try {
             Path shp = createShapefile(tmpDir, message);
-            Path shpZip = createShapeZipfile(shp);
+            Path shpZip = createZipfile(shp);
             writeContent(new FileSystemResource(shpZip), outputMessage);
         } finally {
             FileSystemUtils.deleteRecursively(tmpDir);
         }
     }
 
-    private Path createShapeZipfile(Path shp) throws IOException {
+    private Path createZipfile(Path shp) throws IOException {
         String baseName = FilenameUtils.getBaseName(shp.getFileName().toString());
         Path dbf = shp.getParent().resolve(baseName + ".dbf");
         Path shx = shp.getParent().resolve(baseName + ".shx");
@@ -113,26 +114,20 @@ public class ShapefileFeatureCollectionHttpMessageConverter
     }
 
     private Path createShapefile(Path dir, FeatureCollection message) throws IOException {
-        final SimpleFeatureCollection origContents = message.getOriginalContents().orElseThrow();
-        if (null == origContents.getSchema().getGeometryDescriptor()) {
-            throw new IllegalArgumentException(
-                    "Collection %s does not have a geometry attribute, can't encode as Shapefile"
-                            .formatted(origContents.getSchema().getTypeName()));
-        }
-
         final SimpleFeatureType featureType = resolveFeatureType(message);
         final String typeName = featureType.getTypeName();
         final Path shp = dir.resolve(typeName + ".shp");
+
         ShapefileDataStore ds = createDataStore(shp);
+        final SimpleFeatureCollection origContents = message.getOriginalContents().orElseThrow();
         try (SimpleFeatureIterator orig = origContents.features()) {
             ds.createSchema(featureType);
-            try (FeatureWriter<SimpleFeatureType, SimpleFeature> featureWriter = ds
-                    .getFeatureWriterAppend(Transaction.AUTO_COMMIT)) {
+            try (var featureWriter = ds.getFeatureWriterAppend(Transaction.AUTO_COMMIT)) {
 
                 while (orig.hasNext()) {
                     SimpleFeature from = orig.next();
                     SimpleFeature to = featureWriter.next();
-                    to.setAttributes(from.getAttributes());
+                    setAttributes(from, to);
                     featureWriter.write();
                 }
             }
@@ -142,7 +137,27 @@ public class ShapefileFeatureCollectionHttpMessageConverter
         return shp;
     }
 
-    private ShapefileDataStore createDataStore(Path shp) throws MalformedURLException {
+    private void setAttributes(SimpleFeature from, SimpleFeature to) {
+        SimpleFeatureType fromType = from.getFeatureType();
+
+        // ShapefileDataStore does not respect the default geometry attribute index nor
+        // its name (sets it to the_geom)
+        GeometryDescriptor geometryDescriptor = fromType.getGeometryDescriptor();
+        assert to.getFeatureType().getDescriptor(0) == to.getFeatureType().getGeometryDescriptor();
+        to.setDefaultGeometry(from.getDefaultGeometry());
+
+        for (int fromIndex = 0; fromIndex < fromType.getAttributeCount(); fromIndex++) {
+            AttributeDescriptor descriptor = fromType.getDescriptor(fromIndex);
+            if (geometryDescriptor == descriptor) {
+                continue;
+            }
+            int toIndex = fromIndex + 1;
+            Object value = from.getAttribute(fromIndex);
+            to.setAttribute(toIndex, value);
+        }
+    }
+
+    static ShapefileDataStore createDataStore(Path shp) throws MalformedURLException {
         // avoid searching for other extensions when missing.
         boolean skipScan = true;
         ShapefileDataStore ds = new ShapefileDataStore(shp.toUri().toURL(), skipScan);
@@ -155,6 +170,12 @@ public class ShapefileFeatureCollectionHttpMessageConverter
 
     private SimpleFeatureType resolveFeatureType(FeatureCollection message) {
         SimpleFeatureCollection orig = message.getOriginalContents().orElseThrow();
+        if (null == orig.getSchema().getGeometryDescriptor()) {
+            throw new IllegalArgumentException(
+                    "Collection %s does not have a geometry attribute, can't encode as Shapefile"
+                            .formatted(orig.getSchema().getTypeName()));
+        }
+
         return orig.getSchema();
     }
 

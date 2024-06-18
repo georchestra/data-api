@@ -113,9 +113,9 @@ public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
     }
 
     /**
-     * A PostGIS dialect that does not rely on the public geometry_columns table to get the
-     * SRID of a geometry column.
-     * Get the SRID from the geometry in the table instead.
+     * A PostGIS dialect that does not rely on the public geometry_columns table to
+     * get the SRID of a geometry column. Get the SRID from the geometry in the
+     * table instead.
      */
     private static class SchemaUnawarePostGISDialect extends PostGISDialect {
         public SchemaUnawarePostGISDialect(JDBCDataStore dataStore) {

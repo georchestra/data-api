@@ -66,7 +66,7 @@ class SimpleJsonModule extends SimpleModule {
 
             generator.writeFieldName("records");
             generator.writeStartArray();
-            try (Stream<GeodataRecord> stream = collection.getFeatures()){
+            try (Stream<GeodataRecord> stream = collection.getFeatures()) {
                 stream.forEach(rec -> write(rec, generator));
             }
             generator.writeEndArray();

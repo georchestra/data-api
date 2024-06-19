@@ -8,13 +8,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 
 import javax.sql.DataSource;
 
 import org.geotools.api.data.DataStore;
 import org.geotools.data.postgis.PostGISDialect;
-import org.geotools.data.postgis.PostGISPSDialect;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.SQLDialect;
@@ -50,7 +50,7 @@ public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
     @DependsOn("databaseStartupValidator")
     DataStoreProvider postgisDataStore(DataSource dataSource, @Value("${postgres.schema:#{null}}") String schema)
             throws IOException {
-        Map<String, Object> params = new HashMap<String, Object>(Map.of(//
+        Map<String, Object> params = new HashMap<>(Map.of(//
                 PostgisNGDataStoreFactory.DBTYPE.key, "post gis", //
                 PostgisNGDataStoreFactory.DATASOURCE.key, dataSource, //
                 PostgisNGDataStoreFactory.PREPARED_STATEMENTS.key, true, //
@@ -134,8 +134,12 @@ public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
                         srid = result.getInt(1);
                     }
                 } catch (SQLException e) {
-                    LOGGER.log(Level.WARNING, "Failed to retrieve information about " + tableName + "." + columnName
-                            + " from the geometry_columns table, checking the first geometry instead", e);
+                    String origMessage = Optional.ofNullable(e.getMessage()).orElse("").replaceAll("\\R", " ");
+                    LOGGER.log(Level.WARNING, ()->
+                    """
+                    Failed to retrieve information about %s.%s (%s) \
+                    from the geometry_columns table, checking the first geometry instead
+                    """.formatted(tableName, columnName, origMessage));
                 }
             }
             return srid;

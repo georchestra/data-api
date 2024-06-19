@@ -36,7 +36,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.ogc.features.app.OgcFeaturesApp;
-import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.PostgisBackendAutoConfiguration.PostgisDataStoreProvider;
+import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.PostgisDataStoreProvider;
 import com.camptocamp.opendata.ogc.features.model.Collection;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.zaxxer.hikari.HikariConfig;

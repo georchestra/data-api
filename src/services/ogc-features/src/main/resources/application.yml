@@ -4,7 +4,9 @@ spring:
   main:
     banner-mode: off
   jackson.default-property-inclusion: non-empty
-
+  threads:
+    virtual:
+      enabled: true
 springdoc:
   # see https://springdoc.org/#how-can-i-disable-springdoc-openapi-cache
   cache.disabled: true

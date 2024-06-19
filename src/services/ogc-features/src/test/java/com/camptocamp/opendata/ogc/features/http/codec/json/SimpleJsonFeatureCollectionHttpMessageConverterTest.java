@@ -9,6 +9,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.junit.jupiter.api.Test;
+import org.locationtech.jts.geom.Point;
 import org.springframework.mock.http.MockHttpOutputMessage;
 
 import java.awt.*;
@@ -17,7 +18,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 
-public class SimpleJsonFeatureCollectionHttpMessageConverterTest {
+class SimpleJsonFeatureCollectionHttpMessageConverterTest {
 
     private SimpleFeatureCollection features() {
         SimpleFeatureBuilder fb = new SimpleFeatureBuilder(featureType());
@@ -49,7 +50,7 @@ public class SimpleJsonFeatureCollectionHttpMessageConverterTest {
     }
 
     @Test
-    public void testJavaSqlTimeStampsAsISO8601Dates() throws Exception {
+    void testJavaSqlTimeStampsAsISO8601Dates() throws Exception {
         SimpleJsonFeatureCollectionHttpMessageConverter converter = new SimpleJsonFeatureCollectionHttpMessageConverter();
         MockHttpOutputMessage message = new MockHttpOutputMessage();
 

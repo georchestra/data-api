@@ -5,16 +5,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
-import java.util.logging.Level;
 
 import org.geotools.data.postgis.PostGISDialect;
 import org.geotools.jdbc.JDBCDataStore;
+import org.springframework.lang.Nullable;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A PostGIS dialect that does not rely on the public geometry_columns table to
  * get the SRID of a geometry column. Get the SRID from the geometry in the
  * table instead.
  */
+@Slf4j(topic = "com.camptocamp.opendata.ogc.features.autoconfigure.geotools")
 class SchemaUnawarePostGISDialect extends PostGISDialect {
     public SchemaUnawarePostGISDialect(JDBCDataStore dataStore) {
         super(dataStore);
@@ -26,18 +29,19 @@ class SchemaUnawarePostGISDialect extends PostGISDialect {
         Integer srid = null;
         try (Statement statement = cx.createStatement()) {
 
-            String sqlStatement = "SELECT ST_SRID(\"" + columnName + "\")::int FROM \"" + tableName + "\" LIMIT 1";
+            String sqlStatement = """
+                    SELECT ST_SRID("%s")::int FROM "%s" LIMIT 1
+                    """.formatted(columnName, tableName);
             try (ResultSet result = statement.executeQuery(sqlStatement)) {
                 if (result.next()) {
                     srid = result.getInt(1);
                 }
             } catch (SQLException e) {
                 String origMessage = Optional.ofNullable(e.getMessage()).orElse("").replaceAll("\\R", " ");
-                LOGGER.log(Level.WARNING, ()->
-                """
-                Failed to retrieve information about %s.%s (%s) \
-                from the geometry_columns table, checking the first geometry instead
-                """.formatted(tableName, columnName, origMessage));
+                log.warn("""
+                        Failed to retrieve information about {}.{} ({}) \
+                        from the geometry_columns table, checking the first geometry instead
+                        """, tableName, columnName, origMessage);
             }
         }
         return srid;
@@ -62,42 +66,15 @@ class SchemaUnawarePostGISDialect extends PostGISDialect {
         Integer dimension = null;
         try (Statement statement = cx.createStatement()) {
             if (schemaName == null) {
-                String sqlStatement = "select table_schema from information_schema.tables WHERE table_name LIKE '"
-                        + tableName + "' LIMIT 1;";
-                LOGGER.log(Level.FINE, "Check table in information schema; {0} ", sqlStatement);
-                try (ResultSet result = statement.executeQuery(sqlStatement)) {
-
-                    if (result.next()) {
-                        schemaName = result.getString(1);
-                    }
-                } catch (SQLException e) {
-                    schemaName = "public";
-                }
+                schemaName = findSchemaName(statement, tableName).orElse("public");
             }
 
-            // try geography_columns
-            // first look for an entry in geography_columns
-            String sqlStatement = "SELECT COORD_DIMENSION FROM GEOGRAPHY_COLUMNS WHERE " //
-                    + "F_TABLE_SCHEMA = '" + schemaName + "' " //
-                    + "AND F_TABLE_NAME = '" + tableName + "' " //
-                    + "AND F_GEOGRAPHY_COLUMN = '" + columnName + "'";
-            LOGGER.log(Level.FINE, "Geography srid check; {0} ", sqlStatement);
-            try (ResultSet result = statement.executeQuery(sqlStatement)) {
-
-                if (result.next()) {
-                    return result.getInt(1);
-                }
-            } catch (SQLException e) {
-                LOGGER.log(
-                        Level.WARNING, "Failed to retrieve information about " + schemaName + "." + tableName + "."
-                                + columnName + " from the geography_columns table, checking geometry_columns instead",
-                        e);
-            }
+            // try geography_columns first look for an entry in geography_columns
+            dimension = findDimensionInGeographyColumns(statement, schemaName, tableName, columnName);
         }
 
         // fall back on inspection of the first geometry, assuming uniform srid (fair
-        // assumption
-        // an unpredictable srid makes the table un-queriable)
+        // assumption an unpredictable srid makes the table un-queriable)
         if (dimension == null) {
             dimension = getDimensionFromFirstGeo(schemaName, tableName, columnName, cx);
         }
@@ -107,5 +84,41 @@ class SchemaUnawarePostGISDialect extends PostGISDialect {
         }
 
         return dimension;
+    }
+
+    @Nullable
+    private Integer findDimensionInGeographyColumns(Statement statement, String schemaName, String tableName,
+            String columnName) {
+        String sqlStatement = """
+                SELECT COORD_DIMENSION FROM geography_columns
+                  WHERE f_table_schema = '%s'
+                  AND f_table_name = '%s'
+                  AND f_geography_column = '%s'
+                """.formatted(schemaName, tableName, columnName);
+        log.debug("Geography srid check; {} ", sqlStatement);
+        try (ResultSet result = statement.executeQuery(sqlStatement)) {
+            if (result.next()) {
+                return result.getInt(1);
+            }
+        } catch (SQLException e) {
+            log.warn(
+                    "Failed to retrieve information about {}.{}.{} from the geography_columns table, checking geometry_columns instead",
+                    schemaName, tableName, columnName, e);
+        }
+        return null;
+    }
+
+    private Optional<String> findSchemaName(Statement statement, String tableName) {
+        String sqlStatement = "select table_schema from information_schema.tables WHERE table_name LIKE '%s' LIMIT 1;"
+                .formatted(tableName);
+        log.debug("Check table in information schema; {} ", sqlStatement);
+        try (ResultSet result = statement.executeQuery(sqlStatement)) {
+            if (result.next()) {
+                return Optional.ofNullable(result.getString(1));
+            }
+        } catch (SQLException e) {
+            log.info("Error obtaining schema name: {}", e.getMessage());
+        }
+        return Optional.empty();
     }
 }

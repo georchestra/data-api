@@ -1,8 +1,10 @@
 package com.camptocamp.opendata.ogc.features.http.codec.json;
 
-import com.camptocamp.opendata.ogc.features.model.Collection;
-import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
-import com.camptocamp.opendata.ogc.features.model.GeoToolsFeatureCollection;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+
+import java.util.List;
+
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -12,11 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Point;
 import org.springframework.mock.http.MockHttpOutputMessage;
 
-import java.awt.*;
-import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
+import com.camptocamp.opendata.ogc.features.model.Collection;
+import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
+import com.camptocamp.opendata.ogc.features.model.GeoToolsFeatureCollection;
 
 class SimpleJsonFeatureCollectionHttpMessageConverterTest {
 

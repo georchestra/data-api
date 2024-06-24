@@ -132,6 +132,7 @@ public class DataStoreCollectionRepository implements CollectionRepository {
      */
     private void ensureSchemaIsInSync(Query gtQuery) {
         Query noopQuery = new Query(gtQuery);
+        noopQuery.setSortBy((SortBy[]) null);
         noopQuery.setMaxFeatures(0);
         SimpleFeatureCollection fc = query(noopQuery);
         try (SimpleFeatureIterator it = fc.features()) {

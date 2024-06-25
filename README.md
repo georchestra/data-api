@@ -5,7 +5,7 @@
 ### Requirements
 
 Those components are created with the following requirements:
-* Java 17 JDK
+* Java 21 JDK
 * Maven 3.8+
 * Docker
 

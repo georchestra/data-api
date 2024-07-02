@@ -1,12 +1,14 @@
 package com.camptocamp.opendata.ogc.features.server.impl;
 
+import static java.util.Optional.ofNullable;
+import static org.springframework.http.HttpHeaders.ACCEPT;
+
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeType;
@@ -32,11 +34,11 @@ public class DataApiImpl implements DataApiDelegate {
 
     private final @NonNull CollectionRepository repository;
 
-    private @Autowired NativeWebRequest req;
+    private final @NonNull NativeWebRequest webRequest;
 
     @Override
     public Optional<NativeWebRequest> getRequest() {
-        return Optional.of(req);
+        return Optional.of(webRequest);
     }
 
     /**
@@ -87,16 +89,15 @@ public class DataApiImpl implements DataApiDelegate {
 
         DataQuery dataQuery = toDataQuery(query);
 
-        FeatureCollection fc = repository.query(dataQuery);
+        FeatureCollection fc = addLinks(repository.query(dataQuery), dataQuery);
         HttpHeaders headers = getFeaturesHeaders(query.getCollectionId());
-        fc = addLinks(fc, dataQuery);
         return ResponseEntity.status(200).headers(headers).body(fc);
     }
 
     private HttpHeaders getFeaturesHeaders(String collectionId) {
         HttpHeaders headers = new HttpHeaders();
 
-        getRequest().map(req -> Arrays.stream(req.getHeader("Accept").split(",")).findFirst().get())
+        getRequest().map(req -> Arrays.stream(req.getHeader(ACCEPT).split(",")).findFirst().get())
                 .map(MimeType::valueOf).flatMap(MimeTypes::find).ifPresent(m -> m.addHeaders(collectionId, headers));
         return headers;
     }
@@ -106,7 +107,8 @@ public class DataApiImpl implements DataApiDelegate {
 
         HttpServletRequest nativeRequest = (HttpServletRequest) request.getNativeRequest();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(nativeRequest.getRequestURL().toString());
-        MimeTypes requestedFormat = MimeTypes.find(request.getHeader("Accept")).orElse(MimeTypes.GeoJSON);
+        MimeTypes requestedFormat = ofNullable(request.getHeader(ACCEPT)).flatMap(MimeTypes::find)
+                .orElse(MimeTypes.GEOJSON);
 
         UriComponents self = builder.query(nativeRequest.getQueryString()).build();
         String mime = requestedFormat.getMimeType().toString();
@@ -116,7 +118,7 @@ public class DataApiImpl implements DataApiDelegate {
 
             UriComponents alternate = builder.replaceQueryParam("f", m.getShortName()).build();
             fc.getLinks().add(link(alternate.toString(), "alternate", m.getMimeType().toString(),
-                    "This document as " + m.getDisplayName()));
+                    "This document as %s".formatted(m.getDisplayName())));
         });
 
         if (fc.getNumberMatched() != null && fc.getNumberReturned() != null
@@ -142,7 +144,7 @@ public class DataApiImpl implements DataApiDelegate {
             try {
                 return Integer.parseInt(offsetParam);
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("offset is invalid: " + offsetParam);
+                throw new IllegalArgumentException("offset is invalid: %s".formatted(offsetParam));
             }
         }
         return null;

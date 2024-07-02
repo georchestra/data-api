@@ -1,18 +1,21 @@
 package com.camptocamp.opendata.ogc.features.server.impl;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
-import com.camptocamp.opendata.ogc.features.model.*;
-import com.camptocamp.opendata.ogc.features.model.Collection;
-import com.camptocamp.opendata.ogc.features.model.Collections;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.camptocamp.opendata.ogc.features.http.codec.MimeTypes;
+import com.camptocamp.opendata.ogc.features.model.Collection;
+import com.camptocamp.opendata.ogc.features.model.Collections;
+import com.camptocamp.opendata.ogc.features.model.ConfClasses;
+import com.camptocamp.opendata.ogc.features.model.LandingPage;
+import com.camptocamp.opendata.ogc.features.model.Link;
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
 import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApiDelegate;
 
@@ -25,30 +28,42 @@ public class CapabilitiesApiImpl implements CapabilitiesApiDelegate {
 
     private final @NonNull CollectionRepository repository;
 
-    private @Autowired NativeWebRequest req;
+    private final @NonNull NativeWebRequest webRequest;
 
     @Override
     public Optional<NativeWebRequest> getRequest() {
-        return Optional.of(req);
+        return Optional.of(webRequest);
     }
 
     @Override
     public ResponseEntity<LandingPage> getLandingPage() {
-        String basePath = ((HttpServletRequest) req.getNativeRequest()).getRequestURL().toString();
+        final String basePath = getRequestBasePath();
+        final String appjsonMime = "application/json";
         List<Link> links = List.of(
-                // String href, String rel, String type, String title
-                link(basePath, "self", "application/json", "This document as JSON"),
-                link(basePath + "conformance", "conformance", "application/json", "Conformance"),
-                link(basePath + "collections", "data", "application/json", "Collections"),
-                link(basePath + "../v3/api-docs", "service-desc", "application/vnd.oai.openapi+json;version=3.0",
-                        "OpenAPI definition in JSON format"),
-                link(basePath + "../swagger-ui/index.html", "service-doc", "text/html",
+                // href, rel, type, title
+                link(basePath, "self", appjsonMime, "This document as JSON"),
+                link("%s/conformance".formatted(basePath), "conformance", appjsonMime, "Conformance"),
+                link("%s/collections".formatted(basePath), "data", appjsonMime, "Collections"),
+                link("%s/../v3/api-docs".formatted(basePath), "service-desc",
+                        "application/vnd.oai.openapi+json;version=3.0", "OpenAPI definition in JSON format"),
+                link("%s/../swagger-ui/index.html".formatted(basePath), "service-doc", "text/html",
                         "OpenAPI definition in HTML format"));
         LandingPage ret = new LandingPage(links);
         ret.setTitle("geOrchestra Data API");
         ret.setDescription("data-api provides an API to access datas");
         return ResponseEntity.ok(ret);
 
+    }
+
+    /**
+     * @return base request URI without trailing slash
+     */
+    private String getRequestBasePath() {
+        StringBuffer buffer = ((HttpServletRequest) webRequest.getNativeRequest()).getRequestURL();
+        if (!buffer.isEmpty() && '/' == buffer.codePointAt(buffer.length() - 1)) {
+            buffer.setLength(buffer.length() - 1);
+        }
+        return buffer.toString();
     }
 
     /**

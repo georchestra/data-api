@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import org.geotools.api.filter.FilterFactory;
-import org.geotools.factory.CommonFactoryFinder;
-
 import com.camptocamp.opendata.model.DataQuery;
 import com.camptocamp.opendata.model.DataQuery.SortBy;
 
@@ -19,8 +16,6 @@ import lombok.With;
 @With
 @RequiredArgsConstructor
 public class FeaturesQuery {
-
-    private static final FilterFactory FILTER_FACTORY = CommonFactoryFinder.getFilterFactory();
 
     private @NonNull String collectionId;
     private Integer offset;

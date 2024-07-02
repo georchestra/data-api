@@ -54,7 +54,7 @@ public class SampleDataBackendAutoConfiguration {
     }
 
     @Bean
-    SampleData sampleData() throws IOException {
+    SampleData sampleData() {
         return new SampleData();
     }
 

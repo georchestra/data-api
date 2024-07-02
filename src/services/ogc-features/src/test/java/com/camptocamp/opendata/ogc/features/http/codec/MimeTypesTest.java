@@ -1,7 +1,7 @@
 package com.camptocamp.opendata.ogc.features.http.codec;
 
 import static com.camptocamp.opendata.ogc.features.http.codec.MimeTypes.CSV;
-import static com.camptocamp.opendata.ogc.features.http.codec.MimeTypes.GeoJSON;
+import static com.camptocamp.opendata.ogc.features.http.codec.MimeTypes.GEOJSON;
 import static com.camptocamp.opendata.ogc.features.http.codec.MimeTypes.JSON;
 import static com.camptocamp.opendata.ogc.features.http.codec.MimeTypes.OOXML;
 import static com.camptocamp.opendata.ogc.features.http.codec.MimeTypes.SHAPEFILE;
@@ -16,7 +16,7 @@ class MimeTypesTest {
     @Test
     void testFindByShortName() {
         assertThat(findByShortName("json")).isPresent().get().isEqualTo(JSON);
-        assertThat(findByShortName("geojson")).isPresent().get().isEqualTo(GeoJSON);
+        assertThat(findByShortName("geojson")).isPresent().get().isEqualTo(GEOJSON);
         assertThat(findByShortName("csv")).isPresent().get().isEqualTo(CSV);
         assertThat(findByShortName("ooxml")).isPresent().get().isEqualTo(OOXML);
         assertThat(findByShortName("shapefile")).isPresent().get().isEqualTo(SHAPEFILE);
@@ -26,7 +26,7 @@ class MimeTypesTest {
     void testFindByMimeType() {
 
         assertThat(find("application/json")).isPresent().get().isEqualTo(JSON);
-        assertThat(find("application/geo+json")).isPresent().get().isEqualTo(GeoJSON);
+        assertThat(find("application/geo+json")).isPresent().get().isEqualTo(GEOJSON);
         assertThat(find("text/csv")).isPresent().get().isEqualTo(CSV);
         assertThat(find("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).isPresent().get()
                 .isEqualTo(OOXML);

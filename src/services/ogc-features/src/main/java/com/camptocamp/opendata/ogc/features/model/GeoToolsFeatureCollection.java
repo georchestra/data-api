@@ -10,17 +10,17 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.camptocamp.opendata.processor.geotools.GeoToolsProcessors;
-import io.micrometer.common.util.StringUtils;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 
 import com.camptocamp.opendata.model.GeodataRecord;
+import com.camptocamp.opendata.processor.geotools.GeoToolsProcessors;
 import com.camptocamp.opendata.producer.geotools.FeatureToRecord;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import io.micrometer.common.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

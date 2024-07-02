@@ -56,7 +56,6 @@ public class Excel2007FeatureCollectionHttpMessageConverter
             throws IOException, HttpMessageNotWritableException {
 
         // Streaming version of XSSFWorkbook implementing the "BigGridDemo" strategy.
-        // SXSSFWorkbook workbook = new SXSSFWorkbook();
         StreamingWorkbookWriter writer = new StreamingWorkbookWriter(outputMessage.getBody());
         try {
             addHeader(writer, message.getOriginalContents());

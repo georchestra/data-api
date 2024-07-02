@@ -30,12 +30,12 @@ public class PostgisDataStoreProvider extends DefaultDataStoreProvider {
 
     @VisibleForTesting
     public DataSource getDataSource() {
-        return (DataSource) super.connectionParams.get(PostgisNGDataStoreFactory.DATASOURCE.key);
+        return (DataSource) super.connectionParams.get(JDBCDataStoreFactory.DATASOURCE.key);
 
     }
 
     public void setDataSource(DataSource ds) {
-        super.connectionParams.put(PostgisNGDataStoreFactory.DATASOURCE.key, ds);
+        super.connectionParams.put(JDBCDataStoreFactory.DATASOURCE.key, ds);
         if (null != super.store) {
             ((JDBCDataStore) super.store).setDataSource(ds);
         }

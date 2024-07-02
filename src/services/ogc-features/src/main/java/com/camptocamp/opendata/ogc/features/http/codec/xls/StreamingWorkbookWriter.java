@@ -33,15 +33,25 @@ class StreamingWorkbookWriter {
         startSheet(sheetWriter);
     }
 
-//	<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-//	<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-//	  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-//	  <dimension ref="A1" />
-//	  <sheetViews>
-//	    <sheetView workbookViewId="0"/>
-//	  </sheetViews>
-//	  <sheetFormatPr defaultRowHeight="15.0"/>
-//	  <sheetData>
+    /**
+     * Outputs a worksheet document header like
+     * 
+     * <pre>
+     * {@code
+     * <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+     * <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+     * xmlns:r=
+     * "http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+     *  <dimension ref="A1" />
+     *  <sheetViews>
+     *   <sheetView workbookViewId="0"/>
+     *  </sheetViews>
+     *  <sheetFormatPr defaultRowHeight="15.0"/>
+     * <sheetData>
+     * }
+     * </pre>
+     */
+
     private @SneakyThrows void startSheet(XMLStreamWriter sheet) {
         sheet.writeStartDocument();
         sheet.writeStartElement("worksheet");
@@ -99,7 +109,12 @@ class StreamingWorkbookWriter {
         if (null != lastRow && !lastRow.finished) {
             lastRow.end();
         }
-        return lastRow = (null == lastRow ? new StreamingRow(1, sheetWriter, this) : lastRow.nextRow());
+        if (null == lastRow) {
+            lastRow = new StreamingRow(1, sheetWriter, this);
+        } else {
+            lastRow.nextRow();
+        }
+        return lastRow;
     }
 
     @RequiredArgsConstructor
@@ -109,7 +124,8 @@ class StreamingWorkbookWriter {
         private final XMLStreamWriter writer;
         private final StreamingWorkbookWriter workbook;
 
-        private boolean started, finished;
+        private boolean started;
+        private boolean finished;
 
         private ColumnNames colNames;
 
@@ -176,15 +192,15 @@ class StreamingWorkbookWriter {
         private int index = 0;
 
         public String nextColumn() {
-            String colName = "";
+            StringBuilder colName = new StringBuilder();
             int n = ++index;
 
             while (n > 0) {
                 int i = (n - 1) % letters.size();
-                colName = letters.get(i) + colName;
+                colName.append(letters.get(i)).append(colName);
                 n = (n - 1) / letters.size();
             }
-            return colName + rowNum;
+            return colName.append(rowNum).toString();
         }
     }
 }

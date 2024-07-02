@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 
-import com.fasterxml.jackson.databind.util.StdDateFormat;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -17,6 +16,7 @@ import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.ogc.features.http.codec.MimeTypes;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 /**
  * Simpler, geometry-less, JSON encoder for {@link FeatureCollection} and

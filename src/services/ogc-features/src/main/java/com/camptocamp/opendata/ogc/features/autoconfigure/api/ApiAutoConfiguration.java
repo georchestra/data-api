@@ -1,17 +1,19 @@
 package com.camptocamp.opendata.ogc.features.autoconfigure.api;
 
+import static org.springframework.http.HttpHeaders.ACCEPT;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
-import com.camptocamp.opendata.ogc.features.server.api.*;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -23,6 +25,10 @@ import com.camptocamp.opendata.ogc.features.http.codec.json.SimpleJsonFeatureCol
 import com.camptocamp.opendata.ogc.features.http.codec.shp.ShapefileFeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.http.codec.xls.Excel2007FeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
+import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApiController;
+import com.camptocamp.opendata.ogc.features.server.api.CapabilitiesApiDelegate;
+import com.camptocamp.opendata.ogc.features.server.api.DataApiController;
+import com.camptocamp.opendata.ogc.features.server.api.DataApiDelegate;
 import com.camptocamp.opendata.ogc.features.server.config.HomeController;
 import com.camptocamp.opendata.ogc.features.server.config.SpringDocConfiguration;
 import com.camptocamp.opendata.ogc.features.server.impl.CapabilitiesApiImpl;
@@ -67,13 +73,13 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    CapabilitiesApiDelegate capabilitiesApiDelegate(CollectionRepository repo) {
-        return new CapabilitiesApiImpl(repo);
+    CapabilitiesApiDelegate capabilitiesApiDelegate(CollectionRepository repo, NativeWebRequest req) {
+        return new CapabilitiesApiImpl(repo, req);
     }
 
     @Bean
-    DataApiDelegate dataApiDelegate(CollectionRepository repo) {
-        return new DataApiImpl(repo);
+    DataApiDelegate dataApiDelegate(CollectionRepository repo, NativeWebRequest req) {
+        return new DataApiImpl(repo, req);
     }
 
     /**
@@ -151,11 +157,11 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
             if (formatParam != null) {
                 formatOverride = MimeTypes.findByShortName(formatParam).orElse(null);
             } else {
-                String accept = httpreq.getHeader("Accept");
+                String accept = httpreq.getHeader(ACCEPT);
                 List<String> list = accept == null ? List.of() : Arrays.asList(accept.split(","));
                 boolean anyMatch = list.stream().filter(t -> !t.startsWith("*/*"))
                         .anyMatch(reqType -> MimeTypes.find(reqType).isPresent());
-                formatOverride = anyMatch ? null : MimeTypes.GeoJSON;
+                formatOverride = anyMatch ? null : MimeTypes.GEOJSON;
             }
 
             if (formatOverride != null) {
@@ -163,14 +169,14 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
                     final String formatMime = formatOverride.getMimeType().toString();
 
                     public @Override Enumeration<String> getHeaders(String name) {
-                        if ("Accept".equalsIgnoreCase(name)) {
+                        if (ACCEPT.equalsIgnoreCase(name)) {
                             return Collections.enumeration(List.of(formatMime));
                         }
                         return super.getHeaders(name);
                     }
 
                     public @Override String getHeader(String name) {
-                        if ("Accept".equalsIgnoreCase(name)) {
+                        if (ACCEPT.equalsIgnoreCase(name)) {
                             return formatMime;
                         }
                         return super.getHeader(name);

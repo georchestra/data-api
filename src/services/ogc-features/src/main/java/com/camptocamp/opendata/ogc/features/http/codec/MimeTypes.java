@@ -14,10 +14,12 @@ public enum MimeTypes {
 
     JSON(new MimeType("application", "json"), "json", "JSON") {
         public @Override void addHeaders(String collectionId, HttpHeaders headers) {
+            // no-op
         }
     },
-    GeoJSON(new MimeType("application", "geo+json"), "geojson", "GeoJSON") {
+    GEOJSON(new MimeType("application", "geo+json"), "geojson", "GeoJSON") {
         public @Override void addHeaders(String collectionId, HttpHeaders headers) {
+            // no-op
         }
     },
     SHAPEFILE(new MimeType("application", "x-shapefile"), "shapefile", "Esri Shapefile") {
@@ -58,7 +60,7 @@ public enum MimeTypes {
     public static Optional<MimeTypes> find(@NonNull String mimeType) {
         String mt = mimeType;
         if (mimeType.contains(",")) {
-            mt = Arrays.stream(mimeType.split(",")).findFirst().get();
+            mt = Arrays.stream(mimeType.split(",")).findFirst().orElseThrow();
         }
         MimeType contentType = MimeType.valueOf(mt);
         return find(contentType);

@@ -1,5 +1,8 @@
 package com.camptocamp.opendata.ogc.features.repository;
 
+import static java.util.stream.Stream.concat;
+import static java.util.stream.Stream.of;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
@@ -8,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.geotools.api.data.DataStore;
 import org.geotools.api.data.Query;
@@ -99,12 +101,10 @@ public class DataStoreCollectionRepository implements CollectionRepository {
             dataStoreProvider.reInit();
             try {
                 return command.call();
-            } catch (Exception e2) {
-                log.info("Retry command failed. Giving up for %s".formatted(description));
-                if (e2 instanceof RuntimeException) {
-                    throw (RuntimeException) e2;
-                }
-                throw new RuntimeException(e);
+            } catch (Exception retryError) {
+                String msg = "Retry command failed. Giving up for %s".formatted(description);
+                log.info(msg);
+                throw new IllegalStateException(msg, e);
             }
         }
     }
@@ -128,7 +128,8 @@ public class DataStoreCollectionRepository implements CollectionRepository {
 
     /**
      * Workaround to make sure the datastore cached featuretype is in sync with the
-     * one in the database in case it has changed under the hood
+     * one in the database in case it has changed under the hood. This method is
+     * called on a {@link #runWithRetry()} enclosure.
      */
     private void ensureSchemaIsInSync(Query gtQuery) {
         Query noopQuery = new Query(gtQuery);
@@ -136,8 +137,9 @@ public class DataStoreCollectionRepository implements CollectionRepository {
         noopQuery.setMaxFeatures(0);
         SimpleFeatureCollection fc = query(noopQuery);
         try (SimpleFeatureIterator it = fc.features()) {
-
+            assert null != it;
         } catch (RuntimeException e) {
+            log.warn("Error obtaining reader for {}: {}", noopQuery.getTypeName(), e.getMessage());
             throw e;
         }
     }
@@ -163,20 +165,20 @@ public class DataStoreCollectionRepository implements CollectionRepository {
             try {
                 q.setFilter(ECQL.toFilter(query.getFilter()));
             } catch (CQLException e) {
-                throw new RuntimeException(e);
+                throw new IllegalArgumentException("Unable to parse ECQL filter", e);
             }
         }
         List<SortBy> sortBy = sortBy(query);
         if (null != limit || null != offset) {
             // always add natural order for paging consistency
-            sortBy.add(SortBy.NATURAL_ORDER);
+            sortBy = concat(sortBy.stream(), of(SortBy.NATURAL_ORDER)).toList();
         }
         q.setSortBy(sortBy.toArray(SortBy[]::new));
         return q;
     }
 
     private List<SortBy> sortBy(DataQuery q) {
-        return q.getSortBy().stream().map(this::toSortBy).collect(Collectors.toList());
+        return q.getSortBy().stream().map(this::toSortBy).toList();
     }
 
     private SortBy toSortBy(DataQuery.SortBy order) {

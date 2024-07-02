@@ -25,16 +25,16 @@ public class DefaultDataStoreProvider implements DataStoreProvider, DisposableBe
 
     @Override
     public DataStore get() {
-        DataStore ds = store;
+        DataStore ds = this.store;
         lock.readLock().lock();
         if (ds == null) {
             lock.readLock().unlock();
             lock.writeLock().lock();
             try {
-                ds = store;
+                ds = this.store;
                 if (ds == null) {
                     ds = create();
-                    store = ds;
+                    this.store = ds;
                 }
                 lock.readLock().lock();// downgrade
             } finally {

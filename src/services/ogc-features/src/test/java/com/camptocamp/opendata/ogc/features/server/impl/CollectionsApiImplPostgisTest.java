@@ -18,12 +18,14 @@ import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +38,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.camptocamp.opendata.model.GeodataRecord;
 import com.camptocamp.opendata.ogc.features.app.OgcFeaturesApp;
-import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.PostgisDataStoreProvider;
+import com.camptocamp.opendata.ogc.features.autoconfigure.postgis.PostgisDataStoreProvider;
 import com.camptocamp.opendata.ogc.features.model.Collection;
 import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 import com.zaxxer.hikari.HikariConfig;
@@ -54,18 +56,24 @@ class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
 
     private @Autowired PostgisDataStoreProvider pgDataStoreProvider;
 
+    private @Value("${postgres.schema}") String pgSchema;
+
     private final Set<String> defaultTables = Set.of("locations", "ouvrages-acquis-par-les-mediatheques",
             "base-sirene-v3", "comptages-velo");
 
     static @BeforeAll void setUp(@TempDir Path tmpdir) throws IOException {
 
-        final String initScriptHostPath = copyInitScript(tmpdir);
+        final String initSchema1ScriptHostPath = copyInitScript("/test-data/postgis/opendataindex.sql", tmpdir);
+        final String initSchema2ScriptHostPath = copyInitScript("/test-data/postgis/second_schema.sql", tmpdir);
 
         postgis = (JdbcDatabaseContainer<?>) new PostgisContainerProvider().newInstance()//
                 .withDatabaseName("postgis")//
                 .withUsername("postigs")//
                 .withPassword("postgis")//
-                .withFileSystemBind(initScriptHostPath, "/docker-entrypoint-initdb.d/11-import-sample-data.sql");
+                .withFileSystemBind(initSchema1ScriptHostPath,
+                        "/docker-entrypoint-initdb.d/11-import-opendataindex-schema.sql")
+                .withFileSystemBind(initSchema2ScriptHostPath,
+                        "/docker-entrypoint-initdb.d/12-import-secondschema.sql");
 
         postgis.start();
     }
@@ -86,11 +94,12 @@ class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
         return fidComparator;
     }
 
-    private static String copyInitScript(Path tmpdir) throws IOException {
-        URL resource = CollectionsApiImplPostgisTest.class.getResource("/test-data/postgis/opendataindex.sql");
+    private static String copyInitScript(String resourceName, Path tmpdir) throws IOException {
+        URL resource = CollectionsApiImplPostgisTest.class.getResource(resourceName);
         assertThat(resource).isNotNull();
 
-        Path target = tmpdir.resolve("pg-sample-data.sql");
+        String filename = FilenameUtils.getName(resourceName);
+        Path target = tmpdir.resolve(filename);
         try (InputStream in = resource.openStream()) {
             Files.copy(in, target);
         }
@@ -128,7 +137,7 @@ class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
     }
 
     @Test
-    void testGetCollections_survives_schema_change() throws SQLException {
+    void testGetCollections_survives_table_schema_change() throws SQLException {
         final String table = "locations";
 
         Set<String> collections = getCollectionNames();
@@ -177,7 +186,7 @@ class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
     }
 
     @Test
-    void testGetItems_survives_schema_change() throws SQLException {
+    void testGetItems_survives_table_schema_change() throws SQLException {
 
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(10);
         ResponseEntity<FeatureCollection> response = dataApi.getFeatures(query);
@@ -203,7 +212,7 @@ class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
     }
 
     @Test
-    void testGetItem_survives_schema_change() throws SQLException {
+    void testGetItem_survives_table_schema_change() throws SQLException {
         FeaturesQuery query = FeaturesQuery.of("locations").withLimit(1);
 
         @Cleanup
@@ -226,32 +235,32 @@ class CollectionsApiImplPostgisTest extends AbstractCollectionsApiImplTest {
 
     private void dropTable(String name) throws SQLException {
 		alterDatabase("""
-				DROP TABLE opendataindex."%s"
-				""".formatted(name));
+				DROP TABLE "%s"."%s"
+				""".formatted(pgSchema, name));
 	}
 
     private void renameTable(String table, String as) throws SQLException {
 		alterDatabase("""
-				ALTER TABLE opendataindex."%s" RENAME TO "%s"
-				""".formatted(table, as));
+				ALTER TABLE "%s"."%s" RENAME TO "%s"
+				""".formatted(pgSchema, table, as));
 	}
 
     private void renameColumn(String table, String from, String to) throws SQLException {
 		alterDatabase("""
-				ALTER TABLE opendataindex."%s" RENAME COLUMN "%s" TO "%s"
-				""".formatted(table, from, to));
+				ALTER TABLE "%s"."%s" RENAME COLUMN "%s" TO "%s"
+				""".formatted(pgSchema, table, from, to));
 	}
 
     private void dropColumn(String table, String col) throws SQLException {
 		alterDatabase("""
-				ALTER TABLE opendataindex.%s DROP COLUMN "%s"
-				""".formatted(table, col));
+				ALTER TABLE "%s"."%s" DROP COLUMN "%s"
+				""".formatted(pgSchema, table, col));
 	}
 
     private void createTestTable(String tableName) throws SQLException {
 		alterDatabase("""
-				CREATE TABLE opendataindex."%s" (id BIGINT, name TEXT)
-				""".formatted(tableName));
+				CREATE TABLE "%s"."%s" (id BIGINT, name TEXT)
+				""".formatted(pgSchema, tableName));
 	}
 
     private void alterDatabase(String ddl) throws SQLException {

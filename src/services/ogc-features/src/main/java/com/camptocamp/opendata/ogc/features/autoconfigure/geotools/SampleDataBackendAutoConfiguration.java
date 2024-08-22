@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.util.Assert;
 import org.springframework.util.FileSystemUtils;
 
+import com.camptocamp.opendata.ogc.features.autoconfigure.postgis.PostgisBackendAutoConfiguration;
 import com.camptocamp.opendata.ogc.features.repository.CollectionRepository;
 import com.camptocamp.opendata.ogc.features.repository.DataStoreCollectionRepository;
 import com.camptocamp.opendata.ogc.features.repository.DataStoreProvider;

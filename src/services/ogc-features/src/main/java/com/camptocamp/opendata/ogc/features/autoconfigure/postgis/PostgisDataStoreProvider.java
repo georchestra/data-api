@@ -1,4 +1,4 @@
-package com.camptocamp.opendata.ogc.features.autoconfigure.geotools;
+package com.camptocamp.opendata.ogc.features.autoconfigure.postgis;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 
 import org.geotools.api.data.DataStore;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
+import org.geotools.data.postgis.SchemaUnawarePostGISDialect;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.JDBCDataStoreFactory;
 import org.geotools.jdbc.SQLDialect;

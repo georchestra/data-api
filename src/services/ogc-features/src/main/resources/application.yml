@@ -12,10 +12,10 @@ springdoc:
   cache.disabled: true
   api-docs:
     enabled: true
-    #path: ${openapi.geoServerACL.base-path}/api-docs
+    #path: /v3/api-docs
   swagger-ui:
     enabled: true
-    #path: ${openapi.geoServerACL.base-path}/swagger-ui.html
+    #path: swagger-ui/index.html
     try-it-out-enabled: true
 
 logging:

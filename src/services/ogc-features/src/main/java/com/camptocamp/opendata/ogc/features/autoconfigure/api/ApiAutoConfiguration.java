@@ -17,8 +17,8 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.PostgisBackendAutoConfiguration;
 import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.SampleDataBackendAutoConfiguration;
+import com.camptocamp.opendata.ogc.features.autoconfigure.postgis.PostgisBackendAutoConfiguration;
 import com.camptocamp.opendata.ogc.features.http.codec.MimeTypes;
 import com.camptocamp.opendata.ogc.features.http.codec.csv.CsvFeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.http.codec.json.SimpleJsonFeatureCollectionHttpMessageConverter;

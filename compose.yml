@@ -1,5 +1,3 @@
-version: "3.8"
-
 volumes:
   postgis_data:
 
@@ -32,7 +30,6 @@ services:
     environment:
       POSTGRES_HOST: postgis
       POSTGRES_DB: postgis
-      POSTGRES_SCHEMA: opendataindex
       POSTGRES_USER: postgis
       POSTGRES_PASSWORD: postgis
     volumes:
@@ -52,7 +49,7 @@ services:
       POSTGRES_HOST: postgis
       POSTGRES_PORT: 5432
       POSTGRES_DB: postgis
-      POSTGRES_SCHEMA: opendataindex
+      POSTGRES_SCHEMA: "ville_Villeneuve-d'Ascq"
       POSTGRES_USER: postgis
       POSTGRES_PASSWORD: postgis
       POSTGRES_POOL_MAXSIZE: 20

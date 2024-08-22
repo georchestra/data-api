@@ -1,4 +1,4 @@
-package com.camptocamp.opendata.ogc.features.autoconfigure.geotools;
+package com.camptocamp.opendata.ogc.features.autoconfigure.postgis;
 
 import javax.sql.DataSource;
 

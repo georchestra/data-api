@@ -110,10 +110,11 @@ public class DataStoreCollectionRepository implements CollectionRepository {
     }
 
     @Override
-    public FeatureCollection query(@NonNull DataQuery query) {
-        final Collection collection = findCollection(query.getLayerName()).orElseThrow();
-        final Query gtQuery = toQuery(query);
-        return runWithRetry("query(%s)".formatted(query.getLayerName()), () -> {
+    public Optional<FeatureCollection> query(@NonNull DataQuery query) {
+        final Optional<Collection> col = findCollection(query.getLayerName());
+
+        return col.map(collection -> runWithRetry("query(%s)".formatted(query.getLayerName()), () -> {
+            final Query gtQuery = toQuery(query);
             ensureSchemaIsInSync(gtQuery);
             SimpleFeatureCollection fc = query(gtQuery);
             long matched = count(toQuery(query.withLimit(null).withOffset(null)));
@@ -123,7 +124,7 @@ public class DataStoreCollectionRepository implements CollectionRepository {
             ret.setNumberReturned(returned);
             ret.setTargetCrs(query.getTargetCrs());
             return ret;
-        });
+        }));
     }
 
     /**

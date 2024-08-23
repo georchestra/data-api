@@ -9,32 +9,31 @@ import javax.sql.DataSource;
 
 import org.geotools.api.data.DataStore;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
-import org.geotools.data.postgis.SchemaUnawarePostGISDialect;
+import org.geotools.data.postgis.SchemaUnawarePostgisNGDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.JDBCDataStoreFactory;
-import org.geotools.jdbc.SQLDialect;
 import org.springframework.lang.Nullable;
 
-import com.camptocamp.opendata.ogc.features.repository.DataStoreProvider;
 import com.camptocamp.opendata.ogc.features.repository.DefaultDataStoreProvider;
-import com.google.common.annotations.VisibleForTesting;
+import com.camptocamp.opendata.ogc.features.repository.JdbcDataStoreProvider;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j(topic = "com.camptocamp.opendata.ogc.features.autoconfigure.geotools")
-public class PostgisDataStoreProvider extends DefaultDataStoreProvider {
+public class PostgisDataStoreProvider extends DefaultDataStoreProvider implements JdbcDataStoreProvider {
 
     PostgisDataStoreProvider(@NonNull Map<String, Object> connectionParams) {
         super(new HashMap<>(connectionParams));
     }
 
-    @VisibleForTesting
+    @Override
     public DataSource getDataSource() {
         return (DataSource) super.connectionParams.get(JDBCDataStoreFactory.DATASOURCE.key);
 
     }
 
+    @Override
     public void setDataSource(DataSource ds) {
         super.connectionParams.put(JDBCDataStoreFactory.DATASOURCE.key, ds);
         if (null != super.store) {
@@ -44,17 +43,7 @@ public class PostgisDataStoreProvider extends DefaultDataStoreProvider {
 
     @Override
     protected @NonNull DataStore create() {
-        PostgisNGDataStoreFactory fac = new PostgisNGDataStoreFactory() {
-            @Override
-            protected SQLDialect createSQLDialect(JDBCDataStore dataStore) {
-                return new SchemaUnawarePostGISDialect(dataStore);
-            }
-
-            @Override
-            protected SQLDialect createSQLDialect(JDBCDataStore dataStore, Map<String, ?> params) {
-                return new SchemaUnawarePostGISDialect(dataStore);
-            }
-        };
+        PostgisNGDataStoreFactory fac = new SchemaUnawarePostgisNGDataStoreFactory();
         try {
             return fac.createDataStore(connectionParams);
         } catch (IOException e) {
@@ -62,7 +51,7 @@ public class PostgisDataStoreProvider extends DefaultDataStoreProvider {
         }
     }
 
-    public static DataStoreProvider newInstance(DataSource dataSource, @Nullable String schema) {
+    public static PostgisDataStoreProvider newInstance(DataSource dataSource, @Nullable String schema) {
         Map<String, Object> params = new HashMap<>(Map.of(//
                 PostgisNGDataStoreFactory.DBTYPE.key, "postgis", //
                 JDBCDataStoreFactory.DATASOURCE.key, dataSource, //

@@ -46,3 +46,20 @@ spring:
       connection-timeout: ${postgres.pool.connectiontimeout:60000}
       leak-detection-threshold: ${postgres.pool.leakdetectionthreshold:0}
 
+postgis:
+  schemas:
+    delimiter: ":"
+    refresh:
+      enabled: true
+      interval: PT5S
+    include:
+    - schema: "*"
+      prefix-tables: true
+    #Example to set an alias on a specific schema:
+    #- schema: "ville_Villeneuve-d'Ascq"
+    #  alias: "ville_1"
+    
+    #Example to exclude some schemas:
+    #exclude:
+    #- public
+    #- tiger_data

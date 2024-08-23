@@ -10,7 +10,7 @@ import com.camptocamp.opendata.ogc.features.model.FeatureCollection;
 
 public interface CollectionRepository {
 
-    FeatureCollection query(DataQuery query);
+    Optional<FeatureCollection> query(DataQuery query);
 
     List<Collection> getCollections();
 

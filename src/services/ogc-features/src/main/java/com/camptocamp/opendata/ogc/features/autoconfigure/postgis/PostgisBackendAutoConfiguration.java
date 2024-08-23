@@ -2,8 +2,8 @@ package com.camptocamp.opendata.ogc.features.autoconfigure.postgis;
 
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
@@ -18,6 +18,7 @@ import com.camptocamp.opendata.producer.geotools.FeatureToRecord;
 import lombok.extern.slf4j.Slf4j;
 
 @AutoConfiguration
+@EnableConfigurationProperties(PostgisSchemasConfiguration.class)
 @Profile("postgis")
 @Slf4j(topic = "com.camptocamp.opendata.ogc.features.autoconfigure.geotools")
 public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
@@ -30,9 +31,9 @@ public class PostgisBackendAutoConfiguration implements WebMvcConfigurer {
 
     @Bean(name = "indexDataStore")
     @DependsOn("databaseStartupValidator")
-    DataStoreProvider postgisDataStore(DataSource dataSource, @Value("${postgres.schema:#{null}}") String schema) {
-
-        return PostgisDataStoreProvider.newInstance(dataSource, schema);
+    SchemaMultiplexingPostgisDataStoreProvider schemaMultiplexingPostgisDataStoreProvider(
+            PostgisSchemasConfiguration config, DataSource dataSource) {
+        return new SchemaMultiplexingPostgisDataStoreProvider(config, dataSource);
     }
 
     @Bean

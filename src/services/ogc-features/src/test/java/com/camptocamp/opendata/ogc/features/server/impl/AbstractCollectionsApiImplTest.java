@@ -163,7 +163,6 @@ public abstract class AbstractCollectionsApiImplTest {
                 records.add(rec);
             });
         }
-//		assertThat(records).isEqualTo(sorted);
     }
 
     @Test

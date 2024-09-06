@@ -168,6 +168,12 @@ public class DataStoreCollectionRepository implements CollectionRepository {
                 throw new IllegalArgumentException("Unable to parse ECQL filter", e);
             }
         }
+        if (null != query.getBbox()) {
+            var bbox_filter = ff.bbox(query.getLayerName(), query.getBbox().get(0).doubleValue(),
+                    query.getBbox().get(1).doubleValue(), query.getBbox().get(2).doubleValue(),
+                    query.getBbox().get(3).doubleValue(), query.getTargetCrs());
+            q.setFilter(q.getFilter() != null ? ff.and(q.getFilter(), bbox_filter) : bbox_filter);
+        }
         List<SortBy> sortBy = sortBy(query);
         if (null != limit || null != offset) {
             // always add natural order for paging consistency

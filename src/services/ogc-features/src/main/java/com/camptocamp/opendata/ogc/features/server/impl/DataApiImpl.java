@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
@@ -97,7 +98,7 @@ public class DataApiImpl implements DataApiDelegate {
     private HttpHeaders getFeaturesHeaders(String collectionId) {
         HttpHeaders headers = new HttpHeaders();
 
-        getRequest().map(req -> Arrays.stream(req.getHeader(ACCEPT).split(",")).findFirst().get())
+        getRequest().map(req -> Arrays.stream(Objects.requireNonNull(req.getHeader(ACCEPT)).split(",")).findFirst().get())
                 .map(MimeType::valueOf).flatMap(MimeTypes::find).ifPresent(m -> m.addHeaders(collectionId, headers));
         return headers;
     }
@@ -167,7 +168,7 @@ public class DataApiImpl implements DataApiDelegate {
                 .withLimit(query.getLimit())//
                 .withOffset(query.getOffset())//
                 .withFilter(query.getFilter())//
-                .withSortBy(sortby).withTargetCrs(query.getCrs());
+                .withSortBy(sortby).withTargetCrs(query.getCrs()).withBbox(query.getBbox());
     }
 
 }

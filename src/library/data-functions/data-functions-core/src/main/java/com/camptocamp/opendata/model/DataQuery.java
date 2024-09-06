@@ -1,5 +1,6 @@
 package com.camptocamp.opendata.model;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
@@ -16,20 +17,21 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class DataQuery {
 
-    private @NonNull DataSource source;
-    private String layerName;
-    private Integer offset;
-    private Integer limit;
-    private String filter;
-    private @NonNull List<SortBy> sortBy;
-    private String targetCrs;
+    @NonNull DataSource source;
+    String layerName;
+    Integer offset;
+    Integer limit;
+    String filter;
+    @NonNull List<SortBy> sortBy;
+    String targetCrs;
+    List<BigDecimal> bbox;
 
     public static DataQuery fromUri(URI dataUri) {
         DataSource dataSource = DataSource.fromUri(dataUri);
         return DataQuery.builder().source(dataSource).sortBy(List.of()).build();
     }
 
-    public static record SortBy(String propertyName, boolean ascending) implements Comparator<GeodataRecord> {
+    public record SortBy(String propertyName, boolean ascending) implements Comparator<GeodataRecord> {
 
     @SuppressWarnings("unchecked")
     @Override

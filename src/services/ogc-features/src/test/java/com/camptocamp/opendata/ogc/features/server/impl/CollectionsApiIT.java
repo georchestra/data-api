@@ -250,4 +250,71 @@ class CollectionsApiIT {
 
         JSONAssert.assertEquals(expected, response.getBody(), false);
     }
+
+    @Test
+    void testGetItemsWithBBoxFilter() throws JSONException {
+        final String url = itemsUrlTemplate + "&bbox=-2.416992,42.908160,8.613281,51.508742";
+        Map<String, String> urlVariables = Map.of("collection", "locations", "f", "geojson");
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class, urlVariables);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.parseMediaType("application/geo+json"));
+        String expected = """
+                {
+                  "type": "FeatureCollection",
+                  "numberMatched": -1,
+                  "numberReturned": -1,
+                  "features": [
+                    {
+                      "type": "Feature",
+                      "@typeName": "locations",
+                      "@id": "15",
+                      "geometry": {"type": "Point","@name": "geom","@srs": "EPSG:4326","coordinates": [7.099814,50.733992]},
+                      "properties": {"city": "Bonn","number": 700,"year": 2016}
+                    },
+                    {
+                      "type": "Feature",
+                      "@typeName": "locations",
+                      "@id": "6",
+                      "geometry": {"type": "Point","@name": "geom","@srs": "EPSG:4326","coordinates": [6.6335,46.519833]},
+                      "properties": {"city": " Lausanne","number": 560,"year": 2006}
+                    }
+                  ],
+                  "links": [
+                    {
+                      "href": "http://localhost:<port>/ogcapi/collections/locations/items?f=geojson&bbox=-2.416992,42.908160,8.613281,51.508742",
+                      "rel": "self",
+                      "type": "application/geo+json",
+                      "title": "This document"
+                    },
+                    {
+                      "href": "http://localhost:<port>/ogcapi/collections/locations/items?bbox=-2.416992,42.908160,8.613281,51.508742&f=json",
+                      "rel": "alternate",
+                      "type": "application/json",
+                      "title": "This document as JSON"
+                    },
+                    {
+                      "href": "http://localhost:<port>/ogcapi/collections/locations/items?bbox=-2.416992,42.908160,8.613281,51.508742&f=shapefile",
+                      "rel": "alternate",
+                      "type": "application/x-shapefile",
+                      "title": "This document as Esri Shapefile"
+                    },
+                    {
+                      "href": "http://localhost:<port>/ogcapi/collections/locations/items?bbox=-2.416992,42.908160,8.613281,51.508742&f=csv",
+                      "rel": "alternate",
+                      "type": "text/csv;charset=UTF-8",
+                      "title": "This document as Comma Separated Values"
+                    },
+                    {
+                      "href": "http://localhost:<port>/ogcapi/collections/locations/items?bbox=-2.416992,42.908160,8.613281,51.508742&f=ooxml",
+                      "rel": "alternate",
+                      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                      "title": "This document as Excel 2007 / OOXML"
+                    }
+                  ]
+                }
+                """
+                .replaceAll("<port>", String.valueOf(port));
+
+        JSONAssert.assertEquals(expected, response.getBody(), false);
+    }
 }

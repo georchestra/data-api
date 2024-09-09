@@ -27,6 +27,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 
 import com.camptocamp.opendata.model.DataQuery;
@@ -152,7 +153,7 @@ public class DataStoreCollectionRepository implements CollectionRepository {
         }
     }
 
-    private Query toQuery(@NonNull DataQuery query) {
+    private Query toQuery(@NonNull DataQuery query) throws IOException {
         Query q = new Query(query.getLayerName());
         Integer limit = query.getLimit();
         Integer offset = query.getOffset();
@@ -169,9 +170,14 @@ public class DataStoreCollectionRepository implements CollectionRepository {
             }
         }
         if (null != query.getBbox()) {
-            var bbox_filter = ff.bbox(query.getLayerName(), query.getBbox().get(0).doubleValue(),
-                    query.getBbox().get(1).doubleValue(), query.getBbox().get(2).doubleValue(),
-                    query.getBbox().get(3).doubleValue(), query.getTargetCrs());
+
+            ReferencedEnvelope bbox = new ReferencedEnvelope(query.getBbox().get(0).doubleValue(),
+                    query.getBbox().get(2).doubleValue(), query.getBbox().get(1).doubleValue(),
+                    query.getBbox().get(3).doubleValue(),
+                    dataStore().getSchema(query.getLayerName()).getGeometryDescriptor().getCoordinateReferenceSystem());
+            var bbox_filter = ff.bbox(
+                    ff.property(dataStore().getSchema(query.getLayerName()).getGeometryDescriptor().getLocalName()),
+                    bbox);
             q.setFilter(q.getFilter() != null ? ff.and(q.getFilter(), bbox_filter) : bbox_filter);
         }
         List<SortBy> sortBy = sortBy(query);

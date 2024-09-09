@@ -79,7 +79,7 @@ public class SchemaUnawarePostGISDialect extends PostGISDialect {
             dimension = getDimensionFromFirstGeo(schemaName, tableName, columnName, cx);
         }
 
-        if (dimension == null) {
+        if (dimension == null || dimension < 2) {
             dimension = 2;
         }
 

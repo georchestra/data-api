@@ -9,7 +9,6 @@ Those components are created with the following requirements:
 * Maven 3.8+
 * Docker
 
-
 ### Building
 
 Compile, test, install:
@@ -40,12 +39,18 @@ SPRING_PROFILES_ACTIVE: postgis
 POSTGRES_HOST: postgis
 POSTGRES_PORT: 5432
 POSTGRES_DB: postgis
-POSTGRES_SCHEMA: opendataindex
 POSTGRES_USER: postgis
 POSTGRES_PASSWORD: postgis
 POSTGRES_POOL_MAXSIZE: 20
 POSTGRES_POOL_MINSIZE: 0
 ```
+
+### Serving data from multiple PostgreSQL schemas
+
+The above configuration will result in the `ogc-features` application serving data from all PostgreSQL schemas,
+and prefixing the collection names with the schema names.
+
+Checkout the [postgis.md](postgis.md) file for detailed instructions on how to configure schema inclusion and aliasing.
 
 ### Development
 

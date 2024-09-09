@@ -1,12 +1,12 @@
-package com.camptocamp.opendata.ogc.features.autoconfigure.geotools;
+package org.geotools.data.postgis;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
+import java.util.logging.Level;
 
-import org.geotools.data.postgis.PostGISDialect;
 import org.geotools.jdbc.JDBCDataStore;
 import org.springframework.lang.Nullable;
 
@@ -17,8 +17,8 @@ import lombok.extern.slf4j.Slf4j;
  * get the SRID of a geometry column. Get the SRID from the geometry in the
  * table instead.
  */
-@Slf4j(topic = "com.camptocamp.opendata.ogc.features.autoconfigure.geotools")
-class SchemaUnawarePostGISDialect extends PostGISDialect {
+@Slf4j
+public class SchemaUnawarePostGISDialect extends PostGISDialect {
     public SchemaUnawarePostGISDialect(JDBCDataStore dataStore) {
         super(dataStore);
     }
@@ -89,6 +89,9 @@ class SchemaUnawarePostGISDialect extends PostGISDialect {
     @Nullable
     private Integer findDimensionInGeographyColumns(Statement statement, String schemaName, String tableName,
             String columnName) {
+        schemaName = escapeSingleQuotes(schemaName);
+        tableName = escapeSingleQuotes(tableName);
+        columnName = escapeSingleQuotes(columnName);
         String sqlStatement = """
                 SELECT COORD_DIMENSION FROM geography_columns
                   WHERE f_table_schema = '%s'
@@ -109,6 +112,7 @@ class SchemaUnawarePostGISDialect extends PostGISDialect {
     }
 
     private Optional<String> findSchemaName(Statement statement, String tableName) {
+        tableName = escapeSingleQuotes(tableName);
         String sqlStatement = "select table_schema from information_schema.tables WHERE table_name LIKE '%s' LIMIT 1;"
                 .formatted(tableName);
         log.debug("Check table in information schema; {} ", sqlStatement);
@@ -120,5 +124,46 @@ class SchemaUnawarePostGISDialect extends PostGISDialect {
             log.info("Error obtaining schema name: {}", e.getMessage());
         }
         return Optional.empty();
+    }
+
+    /**
+     * Override to apply {@link #escapeSingleQuotes(String)} to query parameters
+     * (schema, table, column)
+     */
+    @Override
+    String lookupGeometryType(ResultSet columnMetaData, Connection cx, String gTableName, String gColumnName)
+            throws SQLException {
+
+        // grab the information we need to proceed
+        String tableName = escapeSingleQuotes(columnMetaData.getString("TABLE_NAME"));
+        String columnName = escapeSingleQuotes(columnMetaData.getString("COLUMN_NAME"));
+        String schemaName = escapeSingleQuotes(columnMetaData.getString("TABLE_SCHEM"));
+
+        // first attempt, try with the geometry metadata
+        String sqlStatement = """
+                SELECT TYPE FROM %s WHERE
+                F_TABLE_SCHEMA = '%s'
+                AND F_TABLE_NAME = '%s'
+                AND %s = '%s'
+                """.formatted(gTableName, //
+                        schemaName, //
+                        tableName, //
+                        gColumnName, columnName);
+
+        String geomColumn = null;
+        try (Statement statement = cx.createStatement();
+             ResultSet result = statement.executeQuery(sqlStatement)){
+
+            LOGGER.log(Level.FINE, "Geometry type check; {0} ", sqlStatement);
+            if (result.next()) {
+                geomColumn = result.getString(1);
+            }
+        }
+
+        return geomColumn;
+    }
+
+    private String escapeSingleQuotes(String identifier) {
+        return identifier.replace("'", "''");
     }
 }

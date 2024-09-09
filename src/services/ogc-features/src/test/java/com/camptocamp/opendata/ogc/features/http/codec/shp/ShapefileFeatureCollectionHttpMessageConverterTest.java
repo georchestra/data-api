@@ -16,16 +16,12 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.feature.type.AttributeDescriptor;
-import org.geotools.api.feature.type.AttributeType;
 import org.geotools.api.feature.type.GeometryDescriptor;
 import org.geotools.data.collection.ListFeatureCollection;
-import org.geotools.data.memory.MemoryFeatureCollection;
 import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.shapefile.ShapefileDirectoryFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ContentFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;

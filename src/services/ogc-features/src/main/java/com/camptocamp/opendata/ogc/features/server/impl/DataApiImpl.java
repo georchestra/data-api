@@ -11,10 +11,12 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -90,7 +92,9 @@ public class DataApiImpl implements DataApiDelegate {
 
         DataQuery dataQuery = toDataQuery(query);
 
-        FeatureCollection fc = addLinks(repository.query(dataQuery), dataQuery);
+        FeatureCollection fc = repository.query(dataQuery)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        addLinks(fc, dataQuery);
         HttpHeaders headers = getFeaturesHeaders(query.getCollectionId());
         return ResponseEntity.status(200).headers(headers).body(fc);
     }
@@ -103,7 +107,7 @@ public class DataApiImpl implements DataApiDelegate {
         return headers;
     }
 
-    private FeatureCollection addLinks(FeatureCollection fc, DataQuery dataQuery) {
+    private void addLinks(FeatureCollection fc, DataQuery dataQuery) {
         NativeWebRequest request = getRequest().orElseThrow();
 
         HttpServletRequest nativeRequest = (HttpServletRequest) request.getNativeRequest();
@@ -136,7 +140,6 @@ public class DataApiImpl implements DataApiDelegate {
                     .replaceQueryParam("limit", limit).build();
             fc.getLinks().add(1, link(nextUri.toString(), "next", mime, "Next page"));
         }
-        return fc;
     }
 
     private Integer extractOffset(NativeWebRequest request) {

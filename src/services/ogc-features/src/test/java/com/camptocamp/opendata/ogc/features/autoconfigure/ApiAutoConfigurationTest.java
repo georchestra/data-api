@@ -7,8 +7,8 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 
 import com.camptocamp.opendata.ogc.features.autoconfigure.api.ApiAutoConfiguration;
-import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.PostgisBackendAutoConfiguration;
 import com.camptocamp.opendata.ogc.features.autoconfigure.geotools.SampleDataBackendAutoConfiguration;
+import com.camptocamp.opendata.ogc.features.autoconfigure.postgis.PostgisBackendAutoConfiguration;
 import com.camptocamp.opendata.ogc.features.http.codec.csv.CsvFeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.http.codec.shp.ShapefileFeatureCollectionHttpMessageConverter;
 import com.camptocamp.opendata.ogc.features.http.codec.xls.Excel2007FeatureCollectionHttpMessageConverter;

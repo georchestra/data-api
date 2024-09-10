@@ -108,6 +108,38 @@ class SchemaUnawarePostGISDialect extends PostGISDialect {
         return null;
     }
 
+    /**
+     * Get the dimension of the first geometry column in the table
+     * Override default implementation to get the coordinate dimension from the expected geometry instead of the topological dimension.
+     * As WKBWriter expects the coordinate dimension.
+     *
+     * @param schemaName The database schema, could be <code>null</code>.
+     * @param tableName  The table, never <code>null</code>.
+     * @param columnName The column name, never <code>null</code>
+     * @param cx         The database connection.
+     * @return The dimension of the geometry column, or null if not found.
+     *
+     */
+    @Override
+    protected Integer getDimensionFromFirstGeo(
+            String schemaName, String tableName, String columnName, Connection cx) {
+        String sqlStatement = """
+                SELECT ST_NDims(%s::geometry)
+                FROM %s.%s
+                WHERE %s IS NOT NULL LIMIT 1;
+                """.formatted(escapeName(columnName), escapeName(schemaName), escapeName(tableName), escapeName(columnName));
+        log.debug("Geography dimension check; {} ", sqlStatement);
+        try (Statement statement = cx.createStatement()){
+            ResultSet result = statement.executeQuery(sqlStatement);
+            return result.next() ? result.getInt(1) : null;
+        } catch (SQLException e) {
+            log.warn(
+                    "Failed to retrieve information about {}.{}.{} from the geography_columns table, checking geometry_columns instead",
+                    schemaName, tableName, columnName, e);
+        }
+        return null;
+    }
+
     private Optional<String> findSchemaName(Statement statement, String tableName) {
         String sqlStatement = "select table_schema from information_schema.tables WHERE table_name LIKE '%s' LIMIT 1;"
                 .formatted(tableName);

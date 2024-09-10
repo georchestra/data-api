@@ -153,7 +153,7 @@ public class DataStoreCollectionRepository implements CollectionRepository {
         }
     }
 
-    private Query toQuery(@NonNull DataQuery query) throws IOException {
+    private Query toQuery(@NonNull DataQuery query) {
         Query q = new Query(query.getLayerName());
         Integer limit = query.getLimit();
         Integer offset = query.getOffset();
@@ -170,15 +170,19 @@ public class DataStoreCollectionRepository implements CollectionRepository {
             }
         }
         if (null != query.getBbox()) {
-
-            ReferencedEnvelope bbox = new ReferencedEnvelope(query.getBbox().get(0).doubleValue(),
-                    query.getBbox().get(2).doubleValue(), query.getBbox().get(1).doubleValue(),
-                    query.getBbox().get(3).doubleValue(),
-                    dataStore().getSchema(query.getLayerName()).getGeometryDescriptor().getCoordinateReferenceSystem());
-            var bbox_filter = ff.bbox(
-                    ff.property(dataStore().getSchema(query.getLayerName()).getGeometryDescriptor().getLocalName()),
-                    bbox);
-            q.setFilter(q.getFilter() != null ? ff.and(q.getFilter(), bbox_filter) : bbox_filter);
+            GeometryDescriptor gd = null;
+            try {
+                gd = dataStore().getSchema(query.getLayerName()).getGeometryDescriptor();
+            } catch (IOException e) {
+                log.warn("Unable to get geometry descriptor for {}", query.getLayerName());
+            }
+            if (gd != null) {
+                var bbox_filter = ff.bbox(ff.property(gd.getLocalName()),
+                        new ReferencedEnvelope(query.getBbox().get(0).doubleValue(),
+                                query.getBbox().get(2).doubleValue(), query.getBbox().get(1).doubleValue(),
+                                query.getBbox().get(3).doubleValue(), gd.getCoordinateReferenceSystem()));
+                q.setFilter(q.getFilter() != null ? ff.and(q.getFilter(), bbox_filter) : bbox_filter);
+            }
         }
         List<SortBy> sortBy = sortBy(query);
         if (null != limit || null != offset) {

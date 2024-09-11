@@ -90,6 +90,12 @@ We've developed a custom generator to do that, in order to avoid holding the who
 
 Browse to [http://localhost:8080](http://localhost:8080), will redirect to [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html), where you'll find the Swagger UI for the API.
 
+## Extra configuration
+
+The JAVA_TOOLS_OPTIONS environment variable can be used to pass additional JVM options to the application and set georchestra datadir.
+
+E.g.: `JAVA_TOOLS_OPTIONS="-Dgeorchestra.datadir=/etc/georchestra"`
+
 
 
 

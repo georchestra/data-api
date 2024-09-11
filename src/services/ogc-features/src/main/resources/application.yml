@@ -63,3 +63,8 @@ postgis:
     #exclude:
     #- public
     #- tiger_data
+---
+spring:
+  config:
+    # See https://github.com/georchestra/datadir/tree/master/gateway for a configuration override example
+    import: optional:file:${georchestra.datadir}/data-api/application.yaml

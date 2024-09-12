@@ -94,7 +94,7 @@ Browse to [http://localhost:8080](http://localhost:8080), will redirect to [http
 
 The JAVA_TOOLS_OPTIONS environment variable can be used to pass additional JVM options to the application and set georchestra datadir.
 
-E.g.: `JAVA_TOOLS_OPTIONS="-Dgeorchestra.datadir=/etc/georchestra"`
+E.g.: `JAVA_TOOLS_OPTIONS="-Ddataapi.configdir=/etc/georchestra"`
 
 
 

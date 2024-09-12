@@ -67,4 +67,4 @@ postgis:
 spring:
   config:
     # See https://github.com/georchestra/datadir/tree/master/gateway for a configuration override example
-    import: optional:file:${georchestra.datadir}/data-api/application.yaml
+    import: optional:file:${dataapi.configdir}/data-api/application.yaml

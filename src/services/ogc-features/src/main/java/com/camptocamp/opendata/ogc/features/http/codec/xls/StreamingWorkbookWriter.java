@@ -115,8 +115,6 @@ class StreamingWorkbookWriter {
             lastRow = lastRow.nextRow();
         }
         return lastRow;
-        // return lastRow = (null == lastRow ? new StreamingRow(1, sheetWriter, this) :
-        // lastRow.nextRow());
     }
 
     @RequiredArgsConstructor

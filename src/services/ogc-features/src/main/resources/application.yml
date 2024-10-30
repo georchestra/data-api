@@ -19,7 +19,7 @@ springdoc:
     try-it-out-enabled: true
 
 #cors:
-#  allowed-origins: "*"
+#  allowed-origins: "*, https://localhost:8080"
 #  allowed-methods: GET, POST, PUT, DELETE, OPTIONS
 
 logging:

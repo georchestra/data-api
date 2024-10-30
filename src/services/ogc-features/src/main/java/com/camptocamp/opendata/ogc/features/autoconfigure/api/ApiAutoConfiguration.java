@@ -193,18 +193,20 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
     }
 
     @Value("${cors.allowed-origins:}")
-    private String allowedOrigins;
+    private String[] allowedOrigins;
 
     @Value("${cors.allowed-methods:*}")
-    private String allowedMethods;
+    private String[] allowedMethods;
 
     @ConditionalOnProperty(name = "cors", havingValue = "true")
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        if (allowedOrigins.isEmpty()) {
+        if (allowedOrigins.length == 0) {
+            log.warn("CORS disabled");
             return;
         }
-        log.info("CORS enabled for origins: " + allowedOrigins + " methods: " + allowedMethods);
-        registry.addMapping("/**").allowedMethods(allowedMethods.split(",")).allowedOrigins(allowedOrigins.split(","));
+        log.warn("CORS enabled for origins: " + Arrays.toString(allowedOrigins) + " methods: "
+                + Arrays.toString(allowedMethods));
+        registry.addMapping("/**").allowedMethods(allowedMethods).allowedOrigins(allowedOrigins);
     }
 }

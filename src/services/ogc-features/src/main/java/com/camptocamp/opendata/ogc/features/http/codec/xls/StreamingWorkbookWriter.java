@@ -112,7 +112,7 @@ class StreamingWorkbookWriter {
         if (null == lastRow) {
             lastRow = new StreamingRow(1, sheetWriter, this);
         } else {
-            lastRow.nextRow();
+            lastRow = lastRow.nextRow();
         }
         return lastRow;
     }
@@ -192,15 +192,15 @@ class StreamingWorkbookWriter {
         private int index = 0;
 
         public String nextColumn() {
-            StringBuilder colName = new StringBuilder();
+            String colName = "";
             int n = ++index;
 
             while (n > 0) {
                 int i = (n - 1) % letters.size();
-                colName.append(letters.get(i)).append(colName);
+                colName = letters.get(i) + colName;
                 n = (n - 1) / letters.size();
             }
-            return colName.append(rowNum).toString();
+            return colName + rowNum;
         }
     }
 }

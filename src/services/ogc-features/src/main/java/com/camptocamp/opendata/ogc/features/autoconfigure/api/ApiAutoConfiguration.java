@@ -8,7 +8,10 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -55,6 +58,7 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
  */
 @AutoConfiguration
 @Import(SpringDocConfiguration.class)
+@Slf4j
 public class ApiAutoConfiguration implements WebMvcConfigurer {
 
     @Bean
@@ -188,8 +192,21 @@ public class ApiAutoConfiguration implements WebMvcConfigurer {
         }
     }
 
+    @Value("${cors.allowed-origins:}")
+    private String[] allowedOrigins;
+
+    @Value("${cors.allowed-methods:*}")
+    private String[] allowedMethods;
+
+    @ConditionalOnProperty(name = "cors", havingValue = "true")
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedMethods("*");
+        if (allowedOrigins.length == 0) {
+            log.warn("CORS disabled");
+            return;
+        }
+        log.warn("CORS enabled for origins: " + Arrays.toString(allowedOrigins) + " methods: "
+                + Arrays.toString(allowedMethods));
+        registry.addMapping("/**").allowedMethods(allowedMethods).allowedOrigins(allowedOrigins);
     }
 }

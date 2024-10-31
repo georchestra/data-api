@@ -18,6 +18,10 @@ springdoc:
     #path: ${openapi.geoServerACL.base-path}/swagger-ui.html
     try-it-out-enabled: true
 
+#cors:
+#  allowed-origins: "*, https://localhost:8080"
+#  allowed-methods: GET, POST, PUT, DELETE, OPTIONS
+
 logging:
   level:
     root: info

@@ -41,7 +41,7 @@ public class CapabilitiesApiImpl implements CapabilitiesApiDelegate {
         final String appjsonMime = "application/json";
         List<Link> links = List.of(
                 // href, rel, type, title
-                link(basePath, "self", appjsonMime, "This document as JSON"),
+                link(basePath + "/", "self", appjsonMime, "This document as JSON"),
                 link("%s/conformance".formatted(basePath), "conformance", appjsonMime, "Conformance"),
                 link("%s/collections".formatted(basePath), "data", appjsonMime, "Collections"),
                 link("%s/../v3/api-docs".formatted(basePath), "service-desc",

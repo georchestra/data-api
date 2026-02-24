@@ -17,12 +17,14 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class DataQuery {
 
-    @NonNull DataSource source;
+    @NonNull
+    DataSource source;
     String layerName;
     Integer offset;
     Integer limit;
     String filter;
-    @NonNull List<SortBy> sortBy;
+    @NonNull
+    List<SortBy> sortBy;
     String targetCrs;
     List<BigDecimal> bbox;
 

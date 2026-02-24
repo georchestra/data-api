@@ -102,7 +102,8 @@ public class DataApiImpl implements DataApiDelegate {
     private HttpHeaders getFeaturesHeaders(String collectionId) {
         HttpHeaders headers = new HttpHeaders();
 
-        getRequest().map(req -> Arrays.stream(Objects.requireNonNull(req.getHeader(ACCEPT)).split(",")).findFirst().get())
+        getRequest()
+                .map(req -> Arrays.stream(Objects.requireNonNull(req.getHeader(ACCEPT)).split(",")).findFirst().get())
                 .map(MimeType::valueOf).flatMap(MimeTypes::find).ifPresent(m -> m.addHeaders(collectionId, headers));
         return headers;
     }

@@ -223,5 +223,74 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>debianPackage</id>
+      <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+          <plugin>
+            <groupId>pl.project13.maven</groupId>
+            <artifactId>git-commit-id-plugin</artifactId>
+            <version>4.0.0</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>revision</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <prefix>build</prefix>
+              <failOnNoGitDirectory>false</failOnNoGitDirectory>
+              <skipPoms>false</skipPoms>
+              <verbose>false</verbose>
+              <gitDescribe>
+                <tags>true</tags>
+              </gitDescribe>
+              <injectIntoSysProperties>true</injectIntoSysProperties>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.7</version>
+            <executions>
+              <execution>
+                <id>set-project-packageversion</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <exportAntProperties>true</exportAntProperties>
+                  <target>
+                    <condition else="99.master.${maven.build.timestamp}~${build.commit.id.abbrev}" property="project.packageVersion" value="${build.closest.tag.name}.${maven.build.timestamp}~${build.commit.id.abbrev}">
+                      <matches pattern="\d{2}\.\d\.x$" string="${build.branch}"></matches>
+                    </condition>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>net.sf.debian-maven</groupId>
+            <artifactId>debian-maven-plugin</artifactId>
+            <version>1.0.6</version>
+            <configuration>
+              <packageName>georchestra-dataapi</packageName>
+              <packageDescription>geOrchestra Data APIr</packageDescription>
+              <packageVersion>${project.packageVersion}</packageVersion>
+              <projectOrganization>geOrchestra</projectOrganization>
+              <maintainerName>PSC</maintainerName>
+              <maintainerEmail>psc@georchestra.org</maintainerEmail>
+              <excludeAllDependencies>true</excludeAllDependencies>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+      <properties>
+        <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
+      </properties>
+    </profile>
   </profiles>
 </project>
